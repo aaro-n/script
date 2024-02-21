@@ -1,0 +1,3 @@
+* * * * * root echo "Hello, world!" >> /tmp/cron_output.txt
+*/5 * * * * www-data /usr/local/bin/wp --path=/home/www/html/classicpress cron event run --due-now >> /tmp/wp-cron.log
+@reboot root /root/shell/chown.sh

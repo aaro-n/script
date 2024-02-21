@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# 读取所有环境变量并将其写入文件
+env > /home/www/docker_env
+
+# 使用 www-data 用户创建 cron 日志文件
+su -s /bin/sh -c 'touch /tmp/wp-cron.log' www-data
+
+# 启动 cron 并将日志输出到一个文件
+cron -L 15 > /home/www/wp-cron.log 2>&1 &
+
+# 启动一个单独的进程来监视日志文件并将其内容输出到标准输出
+exec tail -f /tmp/wp-cron.log
+
