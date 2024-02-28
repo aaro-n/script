@@ -1,0 +1,27 @@
+<!-- CSS -->
+<link href="//cdn.staticfile.org/artalk/2.8.2/ArtalkLite.css" rel="stylesheet">
+
+<!-- JS -->
+<script src="//cdn.staticfile.org/artalk/2.8.2/ArtalkLite.js"></script>
+
+<!-- Artalk -->
+<div id="Comments"></div>
+<script>
+ Artalk.init ({
+   el:         '#Comments',
+   pageKey:     '<?= addslashes(get_permalink()) ?>',
+   pageTitle:   '<?= addslashes(get_the_title()) ?>',
+   server:      'https://talk.itansuo.info',
+   site:        '<?= addslashes(get_bloginfo('name')) ?>',
+	placeholder: '如果感觉对你有帮助，欢迎留言。\n隐私声明：发表评论后台会记录评论者的IP，请注意。',
+	useBackendConf: false,
+	flatMode: false,
+	imgUpload: false,
+	versionCheck: false,
+	gravatar: {
+    default: 'mp',
+    mirror: 'https://gravatar.ews1.com/avatar/',
+    },
+	locale: 'zh-CN',
+ })
+</script>
