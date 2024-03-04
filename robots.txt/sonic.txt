@@ -1,1 +1,6 @@
+# 禁止抓取本站图片
+Disallow: /*.jpg
+Disallow: /*.png
+Disallow: /*.gif
+
 Sitemap: https://www.itansuo.info/sitemap.xml
