@@ -1,7 +1,7 @@
 User-agent: *
 # 禁止抓取本站图片
-Disallow: /*.jpg
-Disallow: /*.png
-Disallow: /*.gif
-
+Disallow: /https://cf-image.676232.xyz/
+# 禁止抓取管理界面
+Disallow: /admin/
+# 设置站点地图
 Sitemap: https://www.itansuo.info/sitemap.xml
