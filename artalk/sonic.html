@@ -36,10 +36,10 @@
 <script src="//cdn.staticfile.org/artalk/2.8.2/ArtalkLite.js"></script>
 <script>Artalk.init ({
 el:         '#Comments',
-pageKey:     'https://aaro-n.github.io/script/artalk/message.html',
-pageTitle:   '留言板',
+pageKey:     '<?= addslashes(get_permalink()) ?>',
+pageTitle:   '<?= addslashes(get_the_title()) ?>',
 server:      'https://talk.itansuo.info',
-site:        '探索',
+site:        '<?= addslashes(get_bloginfo('name')) ?>',
 placeholder: '如果感觉对你有帮助，欢迎留言。\n评论注意事项：不欢迎垃圾、仇恨及其他令人感到不适的评论。\n隐私声明：发表评论后台会记录评论者的IP，请注意。',
 useBackendConf: false,
 flatMode: false,
