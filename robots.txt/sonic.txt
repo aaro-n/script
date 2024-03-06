@@ -1,6 +1,11 @@
 User-agent: *
 # 禁止抓取本站图片
-Disallow: /https://cf-image.676232.xyz/
+Disallow: /*.jpg$
+Disallow: /*.jpeg$
+Disallow: /*.png$
+Disallow: /*.gif$
+Disallow: /*.bmp$
+Disallow: /*.svg$
 # 禁止抓取管理界面
 Disallow: /admin/
 # 设置站点地图
