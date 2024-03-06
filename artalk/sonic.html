@@ -5,21 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="//cdn.staticfile.org/artalk/2.8.3/ArtalkLite.css" rel="stylesheet">
   <style>
-    /* 浅色模式样式 */
     body {
-      background-color: white;
-      color: black;
+      background-color: #f5f5f5;
+      color: #222;
     }
 
-    /* 深色模式样式 */
     @media (prefers-color-scheme: dark) {
       body {
         background-color: #222;
-        color: #ccc;
+        color: #f5f5f5;
       }
     }
 
-    /* PC 端居中样式 */
     @media (min-width: 768px) {
       #Comments {
         margin: 0 auto;
@@ -27,40 +24,31 @@
       }
     }
   </style>
-  <script>
-    // 获取浏览器的显示模式
-    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-    // 根据显示模式切换样式
-    if (colorScheme === "dark") {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
-    }
-  </script>
 </head>
 <body>
   <div id="Comments"></div>
+
+  <script async defer src="//js.its2.fun/tg/fqik6NiqznM4a4h4bcw.js" data-website-id="337a2c2d-81dc-47c4-bee8-8ab201c4921c" data-host-url="https://tg.ip94.cn"></script>
+  <script src="//cdn.staticfile.org/artalk/2.8.3/ArtalkLite.js"></script>
+  <script>
+    Artalk.init({
+      el: '#Comments',
+      pageKey: 'https://www.itansuo.info/message',
+      pageTitle: '留言板',
+      server: 'https://talk.itansuo.info',
+      site: '探索',
+      placeholder: '如果感觉对你有帮助，欢迎留言。\n评论注意事项：不欢迎垃圾、仇恨及其他令人感到不适的评论。\n隐私声明：发表评论后台会记录评论者的IP，请注意。',
+      useBackendConf: false,
+      flatMode: false,
+      imgUpload: false,
+      versionCheck: false,
+      gravatar: {
+        default: 'mp',
+        mirror: 'https://gravatar.ews1.com/avatar/',
+      },
+      locale: 'zh-CN',
+      darkMode: 'auto',
+    });
+  </script>
 </body>
-<script async defer src="//js.its2.fun/tg/fqik6NiqznM4a4h4bcw.js" data-website-id="337a2c2d-81dc-47c4-bee8-8ab201c4921c" data-host-url="https://tg.ip94.cn"></script>
-<script src="//cdn.staticfile.org/artalk/2.8.3/ArtalkLite.js"></script>
-<script>Artalk.init ({
-el:         '#Comments',
-pageKey:     'https://www.itansuo.info/message',
-pageTitle:   '留言板',
-server:      'https://talk.itansuo.info',
-site:        '探索',
-placeholder: '如果感觉对你有帮助，欢迎留言。\n评论注意事项：不欢迎垃圾、仇恨及其他令人感到不适的评论。\n隐私声明：发表评论后台会记录评论者的IP，请注意。',
-useBackendConf: false,
-flatMode: false,
-imgUpload: false,
-versionCheck: false,
-gravatar: {
-default: 'mp',
-mirror: 'https://gravatar.ews1.com/avatar/',
-},
-locale: 'zh-CN',
-darkMode: 'auto',
-})
-</script>
 </html>
