@@ -8,5 +8,7 @@ Disallow: /*.bmp$
 Disallow: /*.svg$
 # 禁止抓取管理界面
 Disallow: /admin/
+# 禁止抓取RSS
+Disallow: /rss.xml
 # 设置站点地图
 Sitemap: https://www.itansuo.info/sitemap.xml
