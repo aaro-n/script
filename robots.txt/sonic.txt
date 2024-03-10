@@ -6,8 +6,9 @@ Disallow: /*.png$
 Disallow: /*.gif$
 Disallow: /*.bmp$
 Disallow: /*.svg$
-# 禁止抓取管理界面
+# 禁止抓取网页
 Disallow: /admin/
+Disallow: /admin_preview/archives/
 # 禁止抓取RSS
 Disallow: /rss.xml
 # 设置站点地图
