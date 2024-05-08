@@ -13,3 +13,4 @@ Disallow: /admin_preview/archives/
 Disallow: /rss.xml
 # 设置站点地图
 Sitemap: https://www.itansuo.info/sitemap.xml
+Sitemap: https://www.itansuo.info/sonic.xml
