@@ -14,5 +14,6 @@ Disallow: /rss.xml
 Disallow: /atom.xml
 # 禁止抓取分页页面
 Disallow: /archives/page/*
+# 设置站点地图
 Sitemap: https://www.itansuo.info/sitemap.xml
 Sitemap: https://www.itansuo.info/sonic.xml
