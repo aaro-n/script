@@ -11,6 +11,8 @@ Disallow: /admin/
 Disallow: /admin_preview/archives/
 # 禁止抓取RSS
 Disallow: /rss.xml
-# 设置站点地图
+Disallow: /atom.xml
+# 禁止抓取分页页面
+Disallow: /archives/page/*
 Sitemap: https://www.itansuo.info/sitemap.xml
 Sitemap: https://www.itansuo.info/sonic.xml
