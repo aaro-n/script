@@ -7,14 +7,27 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
+            margin: 10px; /* 外边距 */
+            padding: 0; /* 内边距 */
+            border: 1px solid #ccc; /* 边框 */
+            border-radius: 4px; /* 圆角边框 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 内容居中 */
+        }
+        .container {
+            padding: 5px; /* 内边距 */
+            width: 100%; /* 容器宽度 */
+            max-width: 600px; /* 最大宽度 */
+            margin-bottom: 15px; /* 每组之间的间距 */
+            border: 1px solid #ddd; /* 每组的边框 */
+            border-radius: 4px; /* 圆角边框 */
+            background-color: #f9f9f9; /* 背景颜色 */
         }
         input[type="text"], input[type="submit"], input[type="button"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 10px;
+            width: calc(100% - 12px);
+            padding: 5px; /* 输入框内边距 */
+            margin-bottom: 5px; /* 输入框间距 */
             border: 1px solid #ccc;
             border-radius: 4px;
         }
@@ -28,23 +41,26 @@
         }
         pre {
             background-color: #f8f8f8;
-            padding: 10px;
+            padding: 5px; /* 预格式文本内边距 */
             border: 1px solid #ddd;
             overflow: auto;
+            width: 100%; /* 预格式文本宽度 */
         }
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 5px; /* 标签间距 */
         }
     </style>
 </head>
 <body>
 
-<label for="rssInput">输入RSS链接:</label>
-<input id="rssInput" type="text" placeholder="粘贴RSS链接这里">
-<input type="button" id="parseButton" value="解析">
+<div class="container">
+    <label for="rssInput">输入RSS链接:</label>
+    <input id="rssInput" type="text" placeholder="粘贴RSS链接这里">
+    <input type="button" id="parseButton" value="解析">
+</div>
 
-<p>
+<div class="container">
     <label for="hostinput">RSSHub地址:</label>
     <input id="hostinput" type="text" name="host"><br>
     
@@ -59,54 +75,57 @@
     
     <label for="limit">获取的RSS数量:</label>
     <input id="limit" type="text" name="limit" placeholder="填入数字">
-</p>
-<br>
+</div>
 
-<form id="html-routeparams">
-    <label for="title">title:</label>
-    <input type="text" name="title" id="title"><br>
-    
-    <label for="item">item:</label>
-    <input type="text" name="item" id="item"><br>
-    
-    <label for="itemTitle">itemTitle:</label>
-    <input type="text" name="itemTitle" id="itemTitle"><br>
-    
-    <label for="itemTitleAttr">itemTitleAttr:</label>
-    <input type="text" name="itemTitleAttr" id="itemTitleAttr"><br>
-    
-    <label for="itemLink">itemLink:</label>
-    <input type="text" name="itemLink" id="itemLink"><br>
-    
-    <label for="itemLinkAttr">itemLinkAttr:</label>
-    <input type="text" name="itemLinkAttr" id="itemLinkAttr"><br>
-    
-    <label for="itemDesc">itemDesc:</label>
-    <input type="text" name="itemDesc" id="itemDesc"><br>
-    
-    <label for="itemDescAttr">itemDescAttr:</label>
-    <input type="text" name="itemDescAttr" id="itemDescAttr"><br>
-    
-    <label for="itemPubDate">itemPubDate:</label>
-    <input type="text" name="itemPubDate" id="itemPubDate"><br>
-    
-    <label for="itemPubDateAttr">itemPubDateAttr:</label>
-    <input type="text" name="itemPubDateAttr" id="itemPubDateAttr"><br>
-    
-    <label for="itemContent">itemContent:</label>
-    <input type="text" name="itemContent" id="itemContent"><br>
-    
-    <label for="encoding">encoding:</label>
-    <input type="text" name="encoding" id="encoding"><br>
-    
-    <input type="submit" value="Encode">
-</form>
+<div class="container">
+    <form id="html-routeparams">
+        <label for="title">title:</label>
+        <input type="text" name="title" id="title"><br>
+        
+        <label for="item">item:</label>
+        <input type="text" name="item" id="item"><br>
+        
+        <label for="itemTitle">itemTitle:</label>
+        <input type="text" name="itemTitle" id="itemTitle"><br>
+        
+        <label for="itemTitleAttr">itemTitleAttr:</label>
+        <input type="text" name="itemTitleAttr" id="itemTitleAttr"><br>
+        
+        <label for="itemLink">itemLink:</label>
+        <input type="text" name="itemLink" id="itemLink"><br>
+        
+        <label for="itemLinkAttr">itemLinkAttr:</label>
+        <input type="text" name="itemLinkAttr" id="itemLinkAttr"><br>
+        
+        <label for="itemDesc">itemDesc:</label>
+        <input type="text" name="itemDesc" id="itemDesc"><br>
+        
+        <label for="itemDescAttr">itemDescAttr:</label>
+        <input type="text" name="itemDescAttr" id="itemDescAttr"><br>
+        
+        <label for="itemPubDate">itemPubDate:</label>
+        <input type="text" name="itemPubDate" id="itemPubDate"><br>
+        
+        <label for="itemPubDateAttr">itemPubDateAttr:</label>
+        <input type="text" name="itemPubDateAttr" id="itemPubDateAttr"><br>
+        
+        <label for="itemContent">itemContent:</label>
+        <input type="text" name="itemContent" id="itemContent"><br>
+        
+        <label for="encoding">encoding:</label>
+        <input type="text" name="encoding" id="encoding"><br>
+        
+        <input type="submit" value="Encode">
+    </form>
+</div>
 
-<p>编码结果：</p>
-url：<pre id="url"></pre>
-routeParams：<pre id="routeparams"></pre>
-最终路由：<pre id="route"></pre>
-<a id="rsslink" href="#" target="_blank">订阅地址</a>
+<div class="container">
+    <p>编码结果：</p>
+    url：<pre id="url"></pre>
+    routeParams：<pre id="routeparams"></pre>
+    最终路由：<pre id="route"></pre>
+    <a id="rsslink" href="#" target="_blank">订阅地址</a>
+</div>
 
 <script>
     function encode() {
