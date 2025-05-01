@@ -7,47 +7,73 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* 使内容垂直居中 */
+            margin: 0;
+            background-color: #f0f0f0; /* 背景颜色 */
+        }
+        .container {
             border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white; /* 内容背景颜色 */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+            width: 400px; /* 设置固定宽度 */
+            border-radius: 8px; /* 圆角 */
         }
         input[type="text"] {
             width: 100%;
             margin-bottom: 10px;
+            padding: 8px; /* 内边距 */
+            border: 1px solid #ccc; /* 边框 */
+            border-radius: 4px; /* 圆角 */
         }
         input[type="submit"] {
             margin-top: 10px;
+            padding: 8px 12px; /* 内边距 */
+            border: none; /* 去掉边框 */
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white; /* 按钮文字颜色 */
+            border-radius: 4px; /* 圆角 */
+            cursor: pointer; /* 鼠标指针样式 */
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3; /* 悬停效果 */
         }
         pre {
             background-color: #f8f8f8;
             padding: 10px;
             border: 1px solid #ddd;
             overflow: auto;
+            border-radius: 4px; /* 圆角 */
         }
     </style>
 </head>
 <body>
 
-<p>RSSHub地址: <input id="hostinput" type="text" name="host"><br>目标地址: <input id="urlinput" type="text" name="url"><br>访问密钥: <input id="keyinput" type="text" name="key"></p>
-<br>
+<div class="container">
+    <p>RSSHub地址: <input id="hostinput" type="text" name="host"><br>目标地址: <input id="urlinput" type="text" name="url"><br>访问密钥: <input id="keyinput" type="text" name="key"></p>
+    <br>
 
-<form id="html-routeparams">
-    title: <input type="text" name="title"><br>
-    item: <input type="text" name="item"><br>
-    itemTitle: <input type="text" name="itemTitle"><br>
-    itemTitleAttr: <input type="text" name="itemTitleAttr"><br>
-    itemLink: <input type="text" name="itemLink"><br>
-    itemLinkAttr: <input type="text" name="itemLinkAttr"><br>
-    itemDesc: <input type="text" name="itemDesc"><br>
-    itemDescAttr: <input type="text" name="itemDescAttr"><br>
-    <input type="submit" value="Encode">
-</form>
+    <form id="html-routeparams">
+        title: <input type="text" name="title"><br>
+        item: <input type="text" name="item"><br>
+        itemTitle: <input type="text" name="itemTitle"><br>
+        itemTitleAttr: <input type="text" name="itemTitleAttr"><br>
+        itemLink: <input type="text" name="itemLink"><br>
+        itemLinkAttr: <input type="text" name="itemLinkAttr"><br>
+        itemDesc: <input type="text" name="itemDesc"><br>
+        itemDescAttr: <input type="text" name="itemDescAttr"><br>
+        <input type="submit" value="Encode">
+    </form>
 
-<p>编码结果：</p>
-url：<pre id="url"></pre>
-routeParams：<pre id="routeparams"></pre>
-最终路由：<pre id="route"></pre>
-<a id="rsslink" href="#" target="_blank">订阅地址</a>
+    <p>编码结果：</p>
+    url：<pre id="url"></pre>
+    routeParams：<pre id="routeparams"></pre>
+    最终路由：<pre id="route"></pre>
+    <a id="rsslink" href="#" target="_blank">订阅地址</a>
+</div>
 
 <script>
     function encode() {
