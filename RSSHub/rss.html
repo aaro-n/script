@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSSHub 生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        input[type="text"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            margin-top: 10px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+
+<p>RSSHub地址: <input id="hostinput" type="text" name="host"><br>目标地址: <input id="urlinput" type="text" name="url"><br>访问密钥: <input id="keyinput" type="text" name="key"></p>
+<br>
+
+<form id="html-routeparams">
+    title: <input type="text" name="title"><br>
+    item: <input type="text" name="item"><br>
+    itemTitle: <input type="text" name="itemTitle"><br>
+    itemTitleAttr: <input type="text" name="itemTitleAttr"><br>
+    itemLink: <input type="text" name="itemLink"><br>
+    itemLinkAttr: <input type="text" name="itemLinkAttr"><br>
+    itemDesc: <input type="text" name="itemDesc"><br>
+    itemDescAttr: <input type="text" name="itemDescAttr"><br>
+    <input type="submit" value="Encode">
+</form>
+
+<p>编码结果：</p>
+url：<pre id="url"></pre>
+routeParams：<pre id="routeparams"></pre>
+最终路由：<pre id="route"></pre>
+<a id="rsslink" href="#" target="_blank">订阅地址</a>
+
+<script>
+    function encode() {
+        let f = new FormData(form);
+        let p = new URLSearchParams();
+        f.forEach((v, k) => {
+            if (v.length > 0) {
+                p.set(k, v);
+            }
+        });
+        let rp = encodeURIComponent(p.toString());
+        let host = document.getElementById("hostinput").value;
+        let u = encodeURIComponent(document.getElementById("urlinput").value);
+        document.getElementById("url").textContent = u;
+        document.getElementById("routeparams").textContent = rp;
+        let r = `/rsshub/transform/html/${u}/${rp}`;
+        document.getElementById("route").textContent = r;
+        let rss = `${host}${r}`;
+        let k = document.getElementById("keyinput").value;
+        if (k) {
+            rss = `${rss}?key=${k}`;
+        }
+        document.getElementById("rsslink").href = rss;
+    }
+
+    let form = document.getElementById("html-routeparams");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        encode();
+    });
+</script>
+
+</body>
+</html>
