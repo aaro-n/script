@@ -11,19 +11,19 @@
             padding: 20px;
             border: 1px solid #ccc;
         }
-        input[type="text"], input[type="submit"] {
-            width: calc(100% - 22px); /* 减去边距 */
+        input[type="text"], input[type="submit"], input[type="button"] {
+            width: calc(100% - 22px);
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        input[type="submit"] {
+        input[type="submit"], input[type="button"] {
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
         }
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, input[type="button"]:hover {
             background-color: #45a049;
         }
         pre {
@@ -39,6 +39,10 @@
     </style>
 </head>
 <body>
+
+<label for="rssInput">输入RSS链接:</label>
+<input id="rssInput" type="text" placeholder="粘贴RSS链接这里">
+<input type="button" id="parseButton" value="解析">
 
 <p>
     <label for="hostinput">RSSHub地址:</label>
@@ -83,6 +87,18 @@
     <label for="itemDescAttr">itemDescAttr:</label>
     <input type="text" name="itemDescAttr" id="itemDescAttr"><br>
     
+    <label for="itemPubDate">itemPubDate:</label>
+    <input type="text" name="itemPubDate" id="itemPubDate"><br>
+    
+    <label for="itemPubDateAttr">itemPubDateAttr:</label>
+    <input type="text" name="itemPubDateAttr" id="itemPubDateAttr"><br>
+    
+    <label for="itemContent">itemContent:</label>
+    <input type="text" name="itemContent" id="itemContent"><br>
+    
+    <label for="encoding">encoding:</label>
+    <input type="text" name="encoding" id="encoding"><br>
+    
     <input type="submit" value="Encode">
 </form>
 
@@ -102,13 +118,11 @@ routeParams：<pre id="routeparams"></pre>
             }
         });
 
-        // 获取全文的处理
         let fulltext = document.getElementById("fulltext").checked;
         if (fulltext) {
             p.set('mode', 'fulltext');
         }
 
-        // 获取数量的处理
         let limit = document.getElementById("limit").value;
         if (limit) {
             p.set('limit', limit);
@@ -128,7 +142,6 @@ routeParams：<pre id="routeparams"></pre>
             rss = `${rss}?key=${k}`;
         }
 
-        // 处理 mode 和 limit 参数
         let params = [];
         if (fulltext) {
             params.push('mode=fulltext');
@@ -144,11 +157,63 @@ routeParams：<pre id="routeparams"></pre>
         document.getElementById("rsslink").href = rss;
     }
 
+    function parseRSSLink() {
+        const rssLink = document.getElementById("rssInput").value;
+        const urlPattern = /^(https?:\/\/[^/]+)(\/rsshub\/transform\/html\/([^/]+)\/(.*?))(\?key=([^&]*))?(.*)?$/;
+        const match = rssLink.match(urlPattern);
+
+        if (match) {
+            const host = match[1];
+            const targetUrl = decodeURIComponent(match[3]);
+            const paramsString = match[4] || '';
+            const key = match[6] || '';
+            const additionalParams = match[7] || '';
+
+            // 将参数字符串转换为 URLSearchParams 对象
+            const params = new URLSearchParams(decodeURIComponent(paramsString + additionalParams));
+
+            document.getElementById("hostinput").value = host;
+            document.getElementById("urlinput").value = targetUrl;
+
+            // 只保留数字并填入获取的RSS数量
+            const limitMatch = params.get('limit');
+            if (limitMatch) {
+                document.getElementById("limit").value = limitMatch.match(/\d+/) ? limitMatch.match(/\d+/)[0] : '';
+            }
+
+            // 填入访问密钥，去掉6?key=
+            const keyMatch = rssLink.match(/key=([^&]*)/);
+            if (keyMatch) {
+                document.getElementById("keyinput").value = keyMatch[1]; // 只填入密钥
+            } else {
+                document.getElementById("keyinput").value = ''; // 如果没有找到密钥，清空输入框
+            }
+
+            for (const [key, value] of params) {
+                const inputField = document.getElementById(key);
+                if (inputField) {
+                    inputField.value = value;
+                }
+            }
+
+            if (params.has('mode') && params.get('mode') === 'fulltext') {
+                document.getElementById("fulltext").checked = true;
+            } else {
+                document.getElementById("fulltext").checked = false;
+            }
+
+        } else {
+            alert("无效的 RSS 链接格式。");
+        }
+    }
+
     let form = document.getElementById("html-routeparams");
     form.addEventListener("submit", function (event) {
         event.preventDefault();
         encode();
     });
+
+    document.getElementById("parseButton").addEventListener("click", parseRSSLink);
 </script>
 
 </body>
