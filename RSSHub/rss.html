@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSSHub 生成器 Pro</title>
+    <title>RSSHub 生成器 (增强版)</title>
     <style>
         /* CSS 优化点：使用 CSS 变量方便主题管理 */
         :root {
@@ -14,6 +14,9 @@
             --pre-bg: #f0f0f0;
             --text-color: #333;
             --light-border-color: #ddd;
+            --error-color: #d9534f;
+            --secondary-btn-bg: #6c757d;
+            --secondary-btn-hover-bg: #5a6268;
         }
 
         /* CSS 优化点：全局设置 box-sizing，简化布局计算 */
@@ -46,9 +49,24 @@
             border-radius: 8px;
             background-color: var(--container-bg);
         }
+        
+        /* 隐藏标题，但保留给屏幕阅读器，提升可访问性 */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
 
         .input-group {
             margin-bottom: 12px;
+        }
+        .input-group:last-child {
+            margin-bottom: 0;
         }
 
         label {
@@ -75,54 +93,54 @@
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 14px;
         }
 
-        button, input[type="submit"] {
-            width: 100%;
-            padding: 10px;
+        button {
+            width: auto;
+            padding: 8px 15px;
             border: none;
             border-radius: 4px;
             background-color: var(--primary-color);
             color: white;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             transition: background-color 0.2s;
         }
         
-        button:hover, input[type="submit"]:hover {
+        button:hover {
             background-color: var(--primary-hover-color);
         }
         
         .result-item {
             position: relative;
+            margin-bottom: 10px;
         }
 
-        /* UX 优化点：结果展示样式，并为复制按钮留出位置 */
         pre {
             background-color: var(--pre-bg);
             padding: 10px;
             border: 1px solid var(--light-border-color);
             border-radius: 4px;
             overflow-x: auto;
-            white-space: pre-wrap; /* 自动换行 */
+            white-space: pre-wrap;
             word-break: break-all;
             margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 13px;
         }
 
         .copy-btn {
             position: absolute;
-            top: 25px; /* 根据实际情况微调 */
+            top: 5px;
             right: 5px;
             padding: 3px 8px;
             font-size: 12px;
-            background-color: #6c757d;
-            border: none;
+            background-color: var(--secondary-btn-bg);
             border-radius: 4px;
-            color: white;
-            cursor: pointer;
-            opacity: 0.8;
+            opacity: 0.7;
         }
-        .copy-btn:hover { background-color: #5a6268; }
+        .copy-btn:hover { background-color: var(--secondary-btn-hover-bg); opacity: 1; }
         .copy-btn:active { transform: scale(0.95); }
         
         .links {
@@ -135,14 +153,22 @@
             text-decoration: none;
         }
         
-        .parse-group { display: flex; gap: 10px; }
-        .parse-group input[type="text"] { flex-grow: 1; }
-        .parse-group button { width: auto; font-size: 14px; padding: 8px 15px;}
+        .action-group { display: flex; gap: 10px; align-items: center; }
+        .action-group input[type="url"] { flex-grow: 1; }
         
         #parse-error {
-            color: #d9534f;
+            color: var(--error-color);
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
+            min-height: 1em;
+        }
+
+        #subscribe-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -163,11 +189,11 @@
             <h2 id="parser-heading" class="visually-hidden">从链接解析</h2>
             <div class="input-group">
                 <label for="rss-input">从现有 RSSHub 链接解析:</label>
-                <div class="parse-group">
+                <div class="action-group">
                     <input id="rss-input" type="url" placeholder="粘贴完整的 RSSHub 链接">
                     <button type="button" id="parse-btn">解析</button>
                     <!-- UX 优化点：添加清空按钮 -->
-                    <button type="button" id="clear-btn" style="background-color: #6c757d;">清空</button>
+                    <button type="button" id="clear-btn" style="background-color: var(--secondary-btn-bg);">清空</button>
                 </div>
                 <!-- UX 优化点：非阻塞式错误提示 -->
                 <p id="parse-error"></p> 
@@ -178,12 +204,11 @@
             <h2 id="basic-heading" class="visually-hidden">基本配置</h2>
             <div class="input-group">
                 <label for="host-input">RSSHub 地址:</label>
-                <!-- UX 优化点：提供 placeholder -->
                 <input id="host-input" type="text" name="host" placeholder="https://rsshub.app" value="https://rsshub.app">
             </div>
             <div class="input-group">
                 <label for="url-input">目标网页地址:</label>
-                <input id="url-input" type="text" name="url">
+                <input id="url-input" type="url" name="url" placeholder="https://example.com/news">
             </div>
             <div class="input-group">
                 <label for="key-input">访问密钥 (Access Key):</label>
@@ -194,53 +219,53 @@
                 <input id="limit-input" type="number" name="limit" placeholder="默认不限制">
             </div>
             <div class="input-group">
-                <!-- HTML 优化点：label 包裹 input -->
                 <label class="checkbox-label">
                     <input id="fulltext-input" type="checkbox" name="mode" value="fulltext">
-                    是否获取全文
+                    是否获取全文 (mode=fulltext)
                 </label>
             </div>
         </section>
 
         <section aria-labelledby="params-heading">
-            <h2 id="params-heading">路由参数 (routeParams)</h2>
+            <h2 id="params-heading">高级路由参数 (routeParams)</h2>
             <div class="input-group"><label for="title">title:</label><input type="text" name="title" id="title"></div>
             <div class="input-group"><label for="item">item:</label><input type="text" name="item" id="item"></div>
             <div class="input-group"><label for="itemTitle">itemTitle:</label><input type="text" name="itemTitle" id="itemTitle"></div>
+            <div class="input-group"><label for="itemTitleAttr">itemTitleAttr:</label><input type="text" name="itemTitleAttr" id="itemTitleAttr"></div>
             <div class="input-group"><label for="itemLink">itemLink:</label><input type="text" name="itemLink" id="itemLink"></div>
+            <div class="input-group"><label for="itemLinkAttr">itemLinkAttr:</label><input type="text" name="itemLinkAttr" id="itemLinkAttr"></div>
             <div class="input-group"><label for="itemDesc">itemDesc:</label><input type="text" name="itemDesc" id="itemDesc"></div>
+            <div class="input-group"><label for="itemDescAttr">itemDescAttr:</label><input type="text" name="itemDescAttr" id="itemDescAttr"></div>
             <div class="input-group"><label for="itemPubDate">itemPubDate:</label><input type="text" name="itemPubDate" id="itemPubDate"></div>
+            <div class="input-group"><label for="itemPubDateAttr">itemPubDateAttr:</label><input type="text" name="itemPubDateAttr" id="itemPubDateAttr"></div>
             <div class="input-group"><label for="itemContent">itemContent:</label><input type="text" name="itemContent" id="itemContent"></div>
-            <!-- 可以继续添加其他高级参数 -->
+            <div class="input-group"><label for="encoding">encoding:</label><input type="text" name="encoding" id="encoding" placeholder="例如 gbk, gb2312"></div>
         </section>
-
-        <!-- 提交按钮被移除，因为现在是实时更新 -->
-
     </form>
 
     <section aria-labelledby="result-heading">
         <h2 id="result-heading">生成结果</h2>
         <div class="result-item">
             <p><strong>最终订阅地址</strong> (Final URL):</p>
-            <pre id="result-final-url"></pre>
             <button class="copy-btn" data-target="result-final-url">复制</button>
-        </div>
-        <div class="result-item">
-            <p>编码后的目标地址 (Encoded Target URL):</p>
-            <pre id="result-encoded-url"></pre>
-            <button class="copy-btn" data-target="result-encoded-url">复制</button>
+            <pre id="result-final-url"></pre>
         </div>
         <div class="result-item">
             <p>编码后的路由参数 (Encoded routeParams):</p>
-            <pre id="result-route-params"></pre>
             <button class="copy-btn" data-target="result-route-params">复制</button>
+            <pre id="result-route-params"></pre>
+        </div>
+         <div class="result-item">
+            <p>编码后的目标地址 (Encoded Target URL):</p>
+            <button class="copy-btn" data-target="result-encoded-url">复制</button>
+            <pre id="result-encoded-url"></pre>
         </div>
         <a id="subscribe-link" href="#" target="_blank" rel="noopener noreferrer">在新标签页中打开订阅地址</a>
     </section>
 </main>
 
 <script>
-    // JS 优化点：缓存所有需要操作的 DOM 元素
+    // 缓存所有需要操作的 DOM 元素
     const DOMElements = {
         form: document.getElementById('rss-generator-form'),
         rssInput: document.getElementById('rss-input'),
@@ -253,11 +278,14 @@
         subscribeLink: document.getElementById('subscribe-link'),
     };
     
-    // 路由参数字段列表
-    const routeParamFields = ['title', 'item', 'itemTitle', 'itemLink', 'itemDesc', 'itemPubDate', 'itemContent'];
+    // 定义所有属于 routeParams 的字段
+    const routeParamFields = [
+        'title', 'item', 'itemTitle', 'itemLink', 'itemDesc', 'itemPubDate', 'itemContent',
+        'itemTitleAttr', 'itemLinkAttr', 'itemDescAttr', 'itemPubDateAttr', 'encoding'
+    ];
     
     /**
-     * JS 优化点：核心函数，根据表单数据更新输出结果
+     * 核心函数：根据表单数据更新输出结果
      */
     function updateOutput() {
         const formData = new FormData(DOMElements.form);
@@ -266,7 +294,6 @@
         const host = (data.host || 'https://rsshub.app').replace(/\/$/, '');
         const targetUrl = data.url || '';
         
-        // 构建 routeParams
         const routeParams = new URLSearchParams();
         routeParamFields.forEach(field => {
             if (data[field]) {
@@ -274,14 +301,12 @@
             }
         });
 
-        // 编码后的参数
-        const encodedTargetUrl = encodeURIComponent(targetUrl);
-        const encodedRouteParams = encodeURIComponent(routeParams.toString());
+        const encodedTargetUrl = targetUrl ? encodeURIComponent(targetUrl) : '';
+        const encodedRouteParams = routeParams.toString() ? encodeURIComponent(routeParams.toString()) : '';
         
-        // 构建基础路径
         let finalUrl = `${host}/rsshub/transform/html/${encodedTargetUrl}/${encodedRouteParams}`;
         
-        // JS 优化点：使用 URLSearchParams 统一处理查询参数，更健壮
+        // 使用 URLSearchParams 统一处理查询参数，更健壮
         const queryParams = new URLSearchParams();
         if (data.key) queryParams.set('key', data.key);
         if (data.limit) queryParams.set('limit', data.limit);
@@ -292,7 +317,6 @@
             finalUrl += `?${queryString}`;
         }
         
-        // 更新页面上的结果
         DOMElements.resultFinalUrl.textContent = finalUrl;
         DOMElements.resultEncodedUrl.textContent = encodedTargetUrl;
         DOMElements.resultRouteParams.textContent = encodedRouteParams;
@@ -300,39 +324,34 @@
     }
 
     /**
-     * JS 优化点：使用 URL API 解析输入链接，健壮且清晰
+     * 使用 URL API 解析输入链接，填充表单
      */
     function parseAndFill() {
         DOMElements.parseError.textContent = ''; // 清空之前的错误
-        const link = DOMElements.rssInput.value;
+        const link = DOMElements.rssInput.value.trim();
         if (!link) return;
 
         try {
             const url = new URL(link);
             const pathParts = url.pathname.split('/').filter(p => p);
 
-            // 验证路径格式是否正确 /rsshub/transform/html/...
-            if (pathParts[0] !== 'rsshub' || pathParts[1] !== 'transform' || pathParts[2] !== 'html') {
+            if (pathParts[0] !== 'rsshub' || pathParts[1] !== 'transform' || pathParts[2] !== 'html' || !pathParts[3]) {
                 throw new Error('不是一个有效的 RSSHub transform/html 链接。');
             }
             
-            // 清空表单
-            DOMElements.form.reset();
-            updateOutput(); // 重置后也更新一次输出
+            clearForm();
 
             DOMElements.form.elements.namedItem('host').value = `${url.protocol}//${url.host}`;
-            DOMElements.form.elements.namedItem('url').value = decodeURIComponent(pathParts[3] || '');
+            DOMElements.form.elements.namedItem('url').value = decodeURIComponent(pathParts[3]);
             
             const routeParams = new URLSearchParams(decodeURIComponent(pathParts[4] || ''));
             
-            // 合并路径参数和查询参数
-            // 例如 /.../limit=10 和 ?limit=10 效果一样
+            // 合并路径中的参数和查询字符串中的参数 (?key=...)
             const allParams = new URLSearchParams(url.search);
             routeParams.forEach((value, key) => {
                 allParams.set(key, value);
             });
 
-            // 填充表单字段
             for (const [key, value] of allParams.entries()) {
                 const field = DOMElements.form.elements.namedItem(key);
                 if (field) {
@@ -351,11 +370,25 @@
         }
     }
     
-    // UX 优化点：为复制按钮添加事件委托
+    /**
+     * 清空表单和结果
+     */
+    function clearForm() {
+        DOMElements.form.reset();
+        DOMElements.rssInput.value = '';
+        DOMElements.parseError.textContent = '';
+        // 人工设置默认值，因为reset()会清空所有
+        DOMElements.form.elements.namedItem('host').value = "https://rsshub.app";
+        updateOutput();
+    }
+
+    // 事件委托：处理所有复制按钮的点击事件
     document.addEventListener('click', (event) => {
         if (event.target.classList.contains('copy-btn')) {
             const targetId = event.target.dataset.target;
             const content = document.getElementById(targetId).textContent;
+            if (!content) return; // 不复制空内容
+
             navigator.clipboard.writeText(content).then(() => {
                 const originalText = event.target.textContent;
                 event.target.textContent = '已复制!';
@@ -364,21 +397,17 @@
                 }, 1500);
             }).catch(err => {
                 console.error('复制失败: ', err);
+                alert('复制失败，请手动复制。');
             });
         }
     });
 
-    // UX 优化点：实时更新
+    // 实时更新
     DOMElements.form.addEventListener('input', updateOutput);
-
-    DOMElements.parseBtn.addEventListener('click', parseAndFill);
     
-    DOMElements.clearBtn.addEventListener('click', () => {
-        DOMElements.form.reset();
-        DOMElements.rssInput.value = '';
-        DOMElements.parseError.textContent = '';
-        updateOutput();
-    });
+    // 绑定按钮事件
+    DOMElements.parseBtn.addEventListener('click', parseAndFill);
+    DOMElements.clearBtn.addEventListener('click', clearForm);
 
     // 初始加载时运行一次，生成空的初始状态
     updateOutput();
