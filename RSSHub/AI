@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 指令：RSSHub 参数提取</title>
+    <style>
+        :root {
+            --primary-color: #007aff;
+            --primary-hover-color: #0056b3;
+            --success-color: #28a745;
+            --background-color: #f8f9fa;
+            --card-background-color: #ffffff;
+            --text-color: #212529;
+            --subtle-text-color: #6c757d;
+            --border-color: #dee2e6;
+            --code-background: #f1f3f5;
+            --highlight-color: #e74c3c;
+        }
+        
+        @font-face {
+            font-family: 'Inter';
+            src: url('https://rsms.me/inter/font-files/Inter-VariableFont_slnt,wght.woff2') format('woff2-variations');
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        main {
+            width: 100%;
+            max-width: 840px;
+        }
+
+        .prompt-card {
+            background-color: var(--card-background-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 2rem 2.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h1 {
+            margin: 0 0 0.5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .card-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--subtle-text-color);
+        }
+
+        .copy-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background-image: linear-gradient(145deg, var(--primary-color), #005ae0);
+            color: white;
+            padding: 0.8rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
+            margin-top: 1.5rem;
+        }
+        .copy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3);
+        }
+        .copy-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
+        }
+        .copy-button.success {
+            background-image: linear-gradient(145deg, var(--success-color), #1e7e34);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+
+        .card-body {
+            padding: 1.5rem 2.5rem 2.5rem;
+            line-height: 1.8;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            padding-left: 2rem;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0.25rem;
+            top: 0.6rem;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+        code {
+            background-color: var(--code-background);
+            color: #d6336c;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        strong, b {
+           color: var(--highlight-color);
+           font-weight: 600;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 2rem 0;
+        }
+        pre {
+            background-color: var(--code-background);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+      核心修正：将需要复制的原始Markdown文本放在一个隐藏的textarea中。
+      这样可以确保复制的是纯净的、格式正确的文本，而不是被浏览器渲染后的文本。
+    -->
+    <textarea id="prompt-source" style="position: absolute; left: -9999px; top: 0;"></textarea>
+
+    <main>
+        <div class="prompt-card">
+            <header class="card-header">
+                <h1>AI 指令：RSSHub 参数提取</h1>
+                <p>一键复制为 AI "量身定制" 的工作指令</p>
+                <button id="copy-btn" class="copy-button">
+                    <svg id="icon-copy" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg id="icon-check" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span id="copy-btn-text">复制指令</span>
+                </button>
+            </header>
+            
+            <div class="card-body">
+                <!-- 以下内容仅为视觉展示，不参与复制 -->
+                <p>你现在是一个专业的“RSSHub参数提取专家”。你的核心任务是分析我将要提供的HTML网页源码，并为RSSHub的<code>transform/html</code>路由提取最精确的CSS选择器和相关参数。</p>
+                <p>请严格遵循以下规则和参数定义：</p>
+                
+                <h3>第一部分：关键参数</h3>
+                <ul>
+                    <li><code>item</code>: <strong>【最重要】</strong> 这是一个重复出现的、包裹着<strong>单篇文章</strong>所有信息（标题、链接、摘要、日期等）的父级容器。你应该找到一个能选中所有这些文章容器，但又不包含其他无关元素的通用选择器。</li>
+                    <li><code>itemTitle</code>: 在<code>item</code>容器内部，用于定位<strong>文章标题</strong>的元素。</li>
+                    <li><code>itemLink</code>: 在<code>item</code>容器内部，用于定位<strong>文章链接</strong>的<code>&lt;a&gt;</code>标签。通常它和<code>itemTitle</code>是同一个元素或其父/子元素。</li>
+                    <li><code>itemDesc</code>: 在<code>item</code>容器内部，用于定位<strong>文章摘要或描述</strong>的元素。如果找不到明确的摘要，可以留空或选择一个最接近的段落。</li>
+                    <li><code>itemPubDate</code>: 在<code>item</code>容器内部，用于定位<strong>发布日期或时间</strong>的元素。</li>
+                </ul>
+
+                <h3>第二部分：高级属性参数 (`...Attr`)</h3>
+                <ul>
+                    <li><code>itemPubDateAttr</code>: <strong>【优先检查】</strong> 检查你找到的 <code>itemPubDate</code> 元素。如果它是一个 <code>&lt;time&gt;</code> 标签并且含有 <code>datetime</code> 属性，<strong>你必须建议使用此参数</strong>，并设其值为 <code>datetime</code>。这是最标准的做法。</li>
+                    <li><code>itemLinkAttr</code>: 检查你找到的 <code>itemLink</code> 元素。它的链接默认从 <code>href</code> 属性获取。如果链接实际上存在于其他属性中（如 <code>data-url</code>），则建议使用此参数并设其值为对应的属性名。</li>
+                    <li><code>itemDescAttr</code>: 检查你找到的 <code>itemDesc</code> 元素。如果该元素是 <code>&lt;img&gt;</code> 标签，并且你希望使用图片URL作为描述，<strong>你必须建议使用此参数</strong>，并设其值为 <code>src</code>。</li>
+                </ul>
+
+                <h3>第三部分：其他参数</h3>
+                <ul>
+                     <li><code>title</code>: （可选）整个页面的主标题，通常是 <code>&lt;h1&gt;</code> 或 <code>&lt;title&gt;</code> 标签，用于作为RSS Feed的标题。</li>
+                    <li><code>encoding</code>: <strong>【必须检查】</strong> 检查HTML的 <code>&lt;head&gt;</code> 部分，寻找 <code>&lt;meta charset="..."&gt;</code> 或 <code>&lt;meta http-equiv="Content-Type" ...&gt;</code>。如果指定的编码<strong>不是</strong> <code>UTF-8</code> (例如是 <code>gb2312</code>, <code>gbk</code>, <code>big5</code> 等)，<strong>你必须指出</strong>并建议 <code>encoding</code> 参数的值。</li>
+                </ul>
+
+                <h3>第四部分：输出格式</h3>
+                <ul>
+                    <li>请以清晰的键值对形式返回结果。</li>
+                    <li>在每个选择器或参数值后面，用括号 <code>()</code> 附上你选择它的核心理由，这非常重要。</li>
+                    <li>如果某个参数在页面中不存在或难以确定，请明确指出，例如 <code>itemDesc: (未找到明确的摘要元素)</code>。</li>
+                </ul>
+                <hr>
+                <p><b>输出示例：</b></p>
+                <pre><code>item: article.post-preview (选中了每个文章预览的父容器)
+itemTitle: h2.post-title (在文章容器内，这是唯一的标题元素)
+itemLink: a.post-link (在文章容器内，这是包裹标题的链接标签)
+itemDesc: img.post-thumbnail (选择文章缩略图作为摘要)
+itemDescAttr: src (因为itemDesc是图片，所以提取它的src属性作为图片链接)
+itemPubDate: time.post-date (在文章容器内，这是显示日期的time标签)
+itemPubDateAttr: datetime (time标签将标准日期格式存储在datetime属性中，更精确)
+title: h1.page-heading (页面的主标题)
+encoding: gbk (页面的meta标签指明了使用GBK编码)</code></pre>
+                <hr>
+                <p>你已经完全理解了你的任务。请确认，然后等待我提供网页源码。</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. 获取所有需要的DOM元素
+        const copyButton = document.getElementById('copy-btn');
+        const copyButtonText = document.getElementById('copy-btn-text');
+        const iconCopy = document.getElementById('icon-copy');
+        const iconCheck = document.getElementById('icon-check');
+        const promptSourceTextarea = document.getElementById('prompt-source');
+
+        // 2. 将纯净的、格式正确的Markdown文本放入隐藏的textarea中
+        // 使用模板字符串(``)可以轻松处理多行和特殊字符
+        const markdownPrompt = `
+你现在是一个专业的“RSSHub参数提取专家”。你的核心任务是分析我将要提供的HTML网页源码，并为RSSHub的\`transform/html\`路由提取最精确的CSS选择器和相关参数。
+
+请严格遵循以下规则和参数定义：
+
+### **第一部分：关键参数**
+
+你必须为以下参数找到最合适的CSS选择器值：
+
+*   \`item\`: **【最重要】** 这是一个重复出现的、包裹着**单篇文章**所有信息（标题、链接、摘要、日期等）的父级容器。你应该找到一个能选中所有这些文章容器，但又不包含其他无关元素的通用选择器。
+*   \`itemTitle\`: 在\`item\`容器内部，用于定位**文章标题**的元素。
+*   \`itemLink\`: 在\`item\`容器内部，用于定位**文章链接**的\`<a>\`标签。通常它和\`itemTitle\`是同一个元素或其父/子元素。
+*   \`itemDesc\`: 在\`item\`容器内部，用于定位**文章摘要或描述**的元素。如果找不到明确的摘要，可以留空或选择一个最接近的段落。
+*   \`itemPubDate\`: 在\`item\`容器内部，用于定位**发布日期或时间**的元素。
+
+### **第二部分：高级属性参数 (\`...Attr\`)**
+
+在你找到上述元素后，你必须检查是否需要使用 \`...Attr\` 参数。这类参数用于提取HTML标签的**属性值**，而不是它显示的文本。
+
+*   \`itemPubDateAttr\`: **【优先检查】** 检查你找到的 \`itemPubDate\` 元素。如果它是一个 \`<time>\` 标签并且含有 \`datetime\` 属性，**你必须建议使用此参数**，并设其值为 \`datetime\`。这是最标准的做法。
+*   \`itemLinkAttr\`: 检查你找到的 \`itemLink\` 元素。它的链接默认从 \`href\` 属性获取。如果链接实际上存在于其他属性中（如 \`data-url\`），则建议使用此参数并设其值为对应的属性名。
+*   \`itemDescAttr\`: 检查你找到的 \`itemDesc\` 元素。如果该元素是 \`<img>\` 标签，并且你希望使用图片URL作为描述，**你必须建议使用此参数**，并设其值为 \`src\`。
+
+### **第三部分：其他参数**
+
+*   \`title\`: （可选）整个页面的主标题，通常是 \`<h1>\` 或 \`<title>\` 标签，用于作为RSS Feed的标题。
+*   \`encoding\`: **【必须检查】** 检查HTML的 \`<head>\` 部分，寻找 \`<meta charset="...">\` 或 \`<meta http-equiv="Content-Type" ...>\`。如果指定的编码**不是** \`UTF-8\` (例如是 \`gb2312\`, \`gbk\`, \`big5\` 等)，**你必须指出**并建议 \`encoding\` 参数的值。
+
+### **第四部分：输出格式**
+
+*   请以清晰的键值对形式返回结果。
+*   在每个选择器或参数值后面，用括号 \`()\` 附上你选择它的核心理由，这非常重要。
+*   如果某个参数在页面中不存在或难以确定，请明确指出，例如 \`itemDesc: (未找到明确的摘要元素)\`。
+
+---
+**输出示例：**
+\`\`\`
+item: article.post-preview (选中了每个文章预览的父容器)
+itemTitle: h2.post-title (在文章容器内，这是唯一的标题元素)
+itemLink: a.post-link (在文章容器内，这是包裹标题的链接标签)
+itemDesc: img.post-thumbnail (选择文章缩略图作为摘要)
+itemDescAttr: src (因为itemDesc是图片，所以提取它的src属性作为图片链接)
+itemPubDate: time.post-date (在文章容器内，这是显示日期的time标签)
+itemPubDateAttr: datetime (time标签将标准日期格式存储在datetime属性中，更精确)
+title: h1.page-heading (页面的主标题)
+encoding: gbk (页面的meta标签指明了使用GBK编码)
+\`\`\`
+---
+
+你已经完全理解了你的任务。请确认，然后等待我提供网页源码。
+`;
+        promptSourceTextarea.value = markdownPrompt.trim();
+
+        // 3. 为按钮添加点击事件
+        copyButton.addEventListener('click', () => {
+            const textToCopy = promptSourceTextarea.value;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // 复制成功后的视觉反馈
+                copyButtonText.textContent = '已复制！';
+                copyButton.classList.add('success');
+                iconCopy.style.display = 'none';
+                iconCheck.style.display = 'inline-block';
+                
+                // 2秒后恢复原状
+                setTimeout(() => {
+                    copyButtonText.textContent = '复制指令';
+                    copyButton.classList.remove('success');
+                    iconCopy.style.display = 'inline-block';
+                    iconCheck.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败: ', err);
+                copyButtonText.textContent = '复制失败';
+                // 可以考虑更详细的错误提示
+            });
+        });
+    </script>
+</body>
+</html>
