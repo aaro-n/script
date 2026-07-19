@@ -267,7 +267,8 @@
                     <ul>
                         <li><code>itemTitle</code>: 文章标题。默认为元素文本。</li>
                         <li><code>itemTitleAttr</code>: 标题在属性中时的属性名（如 <code>title</code>、<code>alt</code>）。</li>
-                        <li><code>itemLink</code>: 文章链接，通常指向一个 <code>&lt;a&gt;</code> 标签。相对链接自动补全。</li>
+                        <li><code>itemLink</code>: 文章链接，通常指向一个 <code>&lt;a&gt;</code> 标签。相对链接自动补全。<br>
+                        <strong>⚠️ 特殊情况：</strong>如果 <code>item</code> 容器本身就是一个 <code>&lt;a&gt;</code> 标签（如 <code>&lt;a class="list-item"&gt;...&lt;/a&gt;</code>），<strong>不要填 itemLink</strong>，RSSHub 会默认取 item 的 <code>href</code>。重复指定会导致解析错误或 <code>this route is empty</code>。</li>
                         <li><code>itemDesc</code>: 文章摘要或描述。默认为元素的 innerHTML。</li>
                         <li><code>itemPubDate</code>: 文章发布日期。RSSHub 会智能解析多种日期格式。</li>
                     </ul>
