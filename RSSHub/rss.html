@@ -297,12 +297,33 @@
                     <input id="fulltext-input" type="checkbox" name="mode" value="fulltext">
                     是否获取全文 (mode=fulltext)
                 </label>
-                <p class="info-tip">注意：transform/html 路由不处理此参数。请使用下方的 <code>itemContent</code> 参数指定详情页正文选择器来实现全文抓取。</p>
+                <p class="info-tip">⚠️ transform/html 路由 <strong>不处理</strong> 此参数。如需全文，请使用下方的 <code>itemContent</code> 参数。</p>
+            </div>
+            <div class="input-group" style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:10px 14px;margin-top:8px;">
+                <button type="button" class="collapsible-toggle small" id="fulltext-toggle" style="font-size:0.85rem;padding:0;margin:0;">
+                    <span class="arrow">▶</span> <strong>🔍 两种全文提取方式对比</strong>
+                </button>
+                <div class="collapsible-content" id="fulltext-compare" style="margin-top:6px;">
+                    <table style="font-size:0.8rem;border-collapse:collapse;color:#333;">
+                        <tr><td style="padding:4px 8px 4px 0;font-weight:bold;white-space:nowrap;">mode=fulltext</td><td style="padding:4px 0;">中间件用 <code>@jocmp/mercury-parser</code> 算法自动猜正文，常漏段落</td></tr>
+                        <tr><td style="padding:4px 4px 4px 0;font-weight:bold;white-space:nowrap;">itemContent</td><td style="padding:4px 0;">路由用你指定的 CSS 选择器精确从详情页抓取，不丢内容</td></tr>
+                    </table>
+                </div>
             </div>
         </section>
 
         <section aria-labelledby="params-heading">
             <h2 id="params-heading">高级路由参数 (routeParams)</h2>
+            <div class="input-group">
+                <button type="button" class="collapsible-toggle small" id="ai-paste-toggle" style="font-size:0.85rem;padding:4px 0;margin-bottom:8px;">
+                    <span class="arrow">▶</span> 粘贴 AI 提取结果自动填充
+                </button>
+                <div class="collapsible-content" id="ai-paste-content" style="margin-bottom:10px;">
+                    <textarea id="ai-paste-input" style="width:100%;height:160px;font-size:12px;font-family:monospace;padding:8px;border:1px solid var(--border-color);border-radius:4px;" placeholder="粘贴 AI 输出的 key: value 结果，一行一个"></textarea>
+                    <button type="button" id="ai-paste-btn" style="margin-top:6px;background-color:#1890ff;">填充到表单</button>
+                    <p style="font-size:0.75rem;color:#888;margin:4px 0 0;">支持格式：<code>key: value</code> 或 <code>key: value (注释)</code>，会自动填充 routeParams 和高级过滤中的所有字段。</p>
+                </div>
+            </div>
             <div class="input-group"><label for="title">title:</label><input type="text" name="title" id="title" placeholder="Feed 标题，默认取 <title>"></div>
             <div class="input-group"><label for="item">item:</label><input type="text" name="item" id="item" placeholder="文章容器 CSS 选择器 (默认: html)"></div>
             <div class="input-group"><label for="itemTitle">itemTitle:</label><input type="text" name="itemTitle" id="itemTitle" placeholder="标题选择器"></div>
@@ -313,7 +334,26 @@
             <div class="input-group"><label for="itemDescAttr">itemDescAttr:</label><input type="text" name="itemDescAttr" id="itemDescAttr" placeholder="摘要属性名 (默认: 元素 html)"></div>
             <div class="input-group"><label for="itemPubDate">itemPubDate:</label><input type="text" name="itemPubDate" id="itemPubDate" placeholder="日期选择器 (默认: item 元素)"></div>
             <div class="input-group"><label for="itemPubDateAttr">itemPubDateAttr:</label><input type="text" name="itemPubDateAttr" id="itemPubDateAttr" placeholder="日期属性名 (如 datetime)"></div>
-            <div class="input-group"><label for="itemContent">itemContent:</label><input type="text" name="itemContent" id="itemContent" placeholder="详情页全文选择器 (去 itemLink 页面抓取)"></div>
+            <div class="input-group">
+                <label for="itemContent">itemContent (全文抓取)</label>
+                <input type="text" name="itemContent" id="itemContent" placeholder="详情页正文 CSS 选择器，如 article.content">
+                <p class="info-tip">✅ 比 mode=fulltext 更精准：你指定正文容器，RSSHub 去 itemLink 页面精确抓取，缓存并清洗（保留 img）。选择器越准，全文越全。</p>
+                <button type="button" class="collapsible-toggle small" id="itemContent-how-toggle" style="font-size:0.8rem;padding:4px 0;margin-top:4px;">
+                    <span class="arrow">▶</span> 它是怎么抓取的？
+                </button>
+                <div class="collapsible-content" id="itemContent-how" style="background:#f0f7ff;border:1px solid #91d5ff;border-radius:6px;padding:10px 14px;margin-top:6px;font-size:0.82rem;color:#002766;">
+                    <p style="margin:0 0 6px;"><strong>抓取流程（每一步都是 RSSHub 真实代码逻辑）：</strong></p>
+                    <ol style="margin:0;padding-left:18px;">
+                        <li>先访问 <strong>列表页</strong>（你的"目标网页地址"），用 <code>item</code>/<code>itemTitle</code>/<code>itemLink</code> 等选择器提取每篇文章的标题和链接</li>
+                        <li>得到文章列表后，对每一篇，向它的 <strong>itemLink 详情页</strong> 发起 HTTP GET 请求</li>
+                        <li>在详情页 HTML 中，用 <strong>cheerio</strong>（类似 jQuery）执行 <code>$(itemContent)</code>，取出你指定的正文容器</li>
+                        <li>用 <strong>sanitize-html</strong> 清洗 HTML（去除 script/style，保留 img/a/p 等安全标签）</li>
+                        <li>将清洗后的正文 <strong>替换 RSS 条目原有的 description</strong></li>
+                        <li>结果写入 <strong>缓存</strong>（<code>cache.tryGet</code>），同一文章 24 小时内不重复抓取</li>
+                    </ol>
+                    <p style="margin:6px 0 0;font-size:0.78rem;color:#666;">💡 只要 <code>itemLink</code> 指向的页面包含完整正文，配合正确的 <code>itemContent</code> 选择器，就能拿到完整全文。</p>
+                </div>
+            </div>
             <div class="input-group"><label for="encoding">encoding:</label><input type="text" name="encoding" id="encoding" placeholder="例如 gbk, gb2312"></div>
         </section>
 
@@ -574,6 +614,61 @@
                 alert('复制失败，请手动复制。');
             });
         }
+    });
+
+    // fulltext compare toggle
+    document.getElementById('fulltext-toggle').addEventListener('click', () => {
+        document.getElementById('fulltext-toggle').classList.toggle('open');
+        document.getElementById('fulltext-compare').classList.toggle('open');
+    });
+
+    // itemContent how-it-works toggle
+    document.getElementById('itemContent-how-toggle').addEventListener('click', () => {
+        document.getElementById('itemContent-how-toggle').classList.toggle('open');
+        document.getElementById('itemContent-how').classList.toggle('open');
+    });
+
+    // AI paste toggle
+    document.getElementById('ai-paste-toggle').addEventListener('click', () => {
+        document.getElementById('ai-paste-toggle').classList.toggle('open');
+        document.getElementById('ai-paste-content').classList.toggle('open');
+    });
+
+    // AI paste parser: fills routeParams AND filter/query fields
+    const allAutofillFields = [...routeParamFields, ...queryParamFields];
+    document.getElementById('ai-paste-btn').addEventListener('click', () => {
+        const text = document.getElementById('ai-paste-input').value.trim();
+        if (!text) return;
+        const lines = text.split('\n');
+        const fieldMap = {};
+        lines.forEach(line => {
+            const match = line.match(/^([\w]+):\s*(.+?)(?:\s*\(.*)?\s*$/);
+            if (match) {
+                fieldMap[match[1]] = match[2].trim();
+            }
+        });
+        allAutofillFields.forEach(field => {
+            if (fieldMap[field]) {
+                const el = DOMElements.form.elements.namedItem(field);
+                if (!el) return;
+                if (el.type === 'checkbox') {
+                    el.checked = true;
+                } else if (el.tagName === 'SELECT') {
+                    // try exact match first
+                    const option = Array.from(el.options).find(o => o.value === fieldMap[field]);
+                    if (option) el.value = fieldMap[field];
+                } else {
+                    el.value = fieldMap[field];
+                }
+            }
+        });
+        // auto-expand filter section if any filter fields were filled
+        const hasFilter = queryParamFields.some(f => fieldMap[f] && !['key','limit','mode','sorted'].includes(f));
+        if (hasFilter) {
+            document.getElementById('filter-toggle').classList.add('open');
+            document.getElementById('filter-content').classList.add('open');
+        }
+        updateOutput();
     });
 
     DOMElements.form.addEventListener('input', updateOutput);
