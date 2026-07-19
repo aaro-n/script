@@ -340,26 +340,73 @@
         </section>
 
         <section class="category-section">
+            <h2>全局 Query 参数（所有路由通用）</h2>
+            <div class="description">
+                <p>以下参数可附加在任意 RSSHub 路由的 <code>?</code> 后面，对所有路由生效。</p>
+            </div>
+
+            <div class="param-card">
+                <h3>过滤参数</h3>
+                <div class="description">
+                    <ul>
+                        <li><code>filter</code> — 正则表达式，匹配标题/正文/作者/分类，<strong>保留</strong>命中项</li>
+                        <li><code>filter_title</code> / <code>filter_description</code> / <code>filter_author</code> / <code>filter_category</code> — 按字段分别过滤</li>
+                        <li><code>filterout</code> — 正则表达式，匹配标题/正文/作者/分类，<strong>排除</strong>命中项</li>
+                        <li><code>filterout_title</code> / <code>filterout_description</code> / <code>filterout_author</code> / <code>filterout_category</code> — 按字段分别排除</li>
+                        <li><code>filter_case_sensitive</code> — 过滤时是否区分大小写，默认 <code>true</code>，设 <code>false</code> 忽略大小写</li>
+                        <li><code>filter_time</code> — 仅保留最近 N 秒内的条目，如 <code>86400</code> = 24 小时</li>
+                    </ul>
+                </div>
+                <div class="example">
+                    <strong>示例：</strong><code>?filter=AI|ChatGPT</code> 保留含 AI 或 ChatGPT 的条目<br>
+                    <strong>示例：</strong><code>?filterout=广告&filter_case_sensitive=false</code> 排除含"广告"的条目（不区分大小写）<br>
+                    <strong>示例：</strong><code>?filter_time=86400</code> 只保留最近 24 小时
+                </div>
+            </div>
+
+            <div class="param-card">
+                <h3>其他通用参数</h3>
+                <div class="description">
+                    <ul>
+                        <li><code>limit</code> — 限制返回条目数量。注意 <code>transform/html</code> 硬编码上限为 20，此参数只能在 1~20 范围内生效</li>
+                        <li><code>sorted</code> — 是否按时间排序，默认 <code>true</code>，设 <code>false</code> 保持页面原始顺序</li>
+                        <li><code>mode=fulltext</code> — 部分路由支持，启用全文抓取。对 <code>transform/html</code> 无效，请用 <code>itemContent</code> 参数代替</li>
+                        <li><code>key</code> — 自建服务的访问密钥 Access Key</li>
+                        <li><code>tgiv</code> — Telegram Instant View 哈希值</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="font-size:0.85rem;color:#888;margin-top:8px;">
+                📖 详见 <a href="https://docs.rsshub.app/zh/guide/parameters" target="_blank" rel="noopener noreferrer">RSSHub 通用参数文档</a>
+            </p>
+        </section>
+
+        <section class="category-section">
             <h2>其他 Transform 路由</h2>
             <div class="description">
                 <p>除了 <code>/rsshub/transform/html</code>，RSSHub 还支持以下 transform 路由：</p>
                 <ul>
-                    <li><strong><code>/rsshub/transform/json/:url/:routeParams</code></strong> — 从 JSON API 响应生成 RSS。支持 <code>itemTitle</code>、<code>itemLink</code>、<code>itemLinkPrefix</code>、<code>itemDesc</code>、<code>itemPubDate</code> 等 JSON Path 参数。</li>
-                    <li><strong><code>/rsshub/transform/sitemap/:url/:routeParams</code></strong> — 从网站 sitemap.xml 生成 RSS（<code>:routeParams</code> 可选）。</li>
+                    <li><strong><code>/rsshub/transform/json/:url/:routeParams</code></strong> — 从 JSON API 响应生成 RSS。支持 <code>itemTitle</code>、<code>itemLink</code>、<code>itemLinkPrefix</code>、<code>itemDesc</code>、<code>itemPubDate</code> 等 JSON Path 参数。<br>
+                    📄 <em>可制作摘要</em>：若 API 返回字段中包含正文，可用 <code>itemDesc</code> 提取。但无法去详情页抓取全文。</li>
+                    <li><strong><code>/rsshub/transform/sitemap/:url/:routeParams</code></strong> — 从网站 sitemap.xml 生成 RSS（<code>:routeParams</code> 可选）。<br>
+                    ❌ <em>无摘要/正文</em>：只能拿到 URL 列表和 <code>lastmod</code> 日期，不含页面内容。</li>
                 </ul>
                 <p>详情参阅 <a href="https://docs.rsshub.app/zh/routes/rsshub" target="_blank" rel="noopener noreferrer">RSSHub 官方文档 /rsshub 路由</a>。</p>
             </div>
         </section>
 
         <section class="category-section">
-            <h2>制作全文 RSS 的几种方式</h2>
+            <h2>制作摘要/全文 RSS 的方式</h2>
             <div class="description">
-                <p>RSSHub <strong>没有内置通用的 readability 全文提取路由</strong>（不存在 <code>/rsshub/fulltext</code> 之类）。以下是目前可用的全文获取方案：</p>
+                <p>RSSHub <strong>没有内置通用的 readability 全文提取路由</strong>（不存在 <code>/rsshub/fulltext</code> 之类）。以下是目前可用的方案：</p>
                 <ol>
                     <li>
-                        <strong><code>/rsshub/transform/html</code> + <code>itemContent</code></strong> — 最通用的方案。<br>
+                        <strong><code>/rsshub/transform/html</code> + <code>itemContent</code></strong> — <em>唯一能去详情页抓取全文的方案</em>。<br>
                         指定详情页正文的 CSS 选择器，RSSHub 会自动去每篇文章的 <code>itemLink</code> 页面抓取全文，并用 <code>sanitize-html</code> 清洗（保留 img 标签），带有缓存。需自建服务。
-                        <br><code>示例: /rsshub/transform/html/<em>目标URL</em>/item=...&itemLink=...&itemContent=article.content</code>
+                    </li>
+                    <li>
+                        <strong><code>/rsshub/transform/json</code> + <code>itemDesc</code></strong> — 若 API 字段已含正文。<br>
+                        例如 GitHub Releases API 的 <code>body</code> 字段本身就含完整 Markdown，用 <code>itemDesc=body</code> 即可拿到全文。但无详情页二次抓取能力。
                     </li>
                     <li>
                         <strong>各路由自带的 <code>?mode=fulltext</code></strong> — 部分内置路由支持。<br>
@@ -367,7 +414,7 @@
                     </li>
                     <li>
                         <strong>第三方 Readability 方案</strong> — RSSHub 社区外方案。<br>
-                        可使用 <a href="https://github.com/DIYgod/RSSHub-Radar" target="_blank" rel="noopener noreferrer">RSSHub Radar</a> 配合 <a href="https://github.com/DIYgod/RSSHub" target="_blank" rel="noopener noreferrer">RSSHub</a> 之后，借助 <a href="https://github.com/mozilla/readability" target="_blank" rel="noopener noreferrer">Mozilla Readability</a> 等库在前端做全文提取。
+                        可使用 <a href="https://github.com/DIYgod/RSSHub-Radar" target="_blank" rel="noopener noreferrer">RSSHub Radar</a> 配合 <a href="https://mozilla.github.io/readability/" target="_blank" rel="noopener noreferrer">Mozilla Readability</a> 等库在前端做全文提取。
                     </li>
                 </ol>
             </div>
