@@ -83,12 +83,13 @@
             width: auto;
         }
 
-        input[type="text"], input[type="url"], input[type="number"] {
+        input[type="text"], input[type="url"], input[type="number"], select {
             width: 100%;
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 14px;
+            background: #fff;
         }
 
         button {
@@ -186,6 +187,56 @@
             font-size: 0.75rem;
             color: #aaa;
         }
+
+        .collapsible-toggle {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-color);
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+        .collapsible-toggle:hover { color: var(--primary-color); }
+        .collapsible-toggle .arrow {
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .collapsible-toggle.open .arrow {
+            transform: rotate(90deg);
+        }
+        .collapsible-content {
+            display: none;
+            margin-top: 8px;
+        }
+        .collapsible-content.open {
+            display: block;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 480px) {
+            .filter-grid { grid-template-columns: 1fr; }
+        }
+
+        .filter-doc-link {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--light-border-color);
+        }
+        .filter-doc-link a {
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -230,6 +281,7 @@
             <div class="input-group">
                 <label for="url-input">目标网页地址:</label>
                 <input id="url-input" type="url" name="url" placeholder="https://example.com/news">
+                <p id="url-hint" class="info-tip" style="display:none;color:#d9534f;">⚠️ 含非 ASCII 字符，生成时会自动 encodeURIComponent</p>
             </div>
             <div class="input-group">
                 <label for="key-input">访问密钥 (Access Key):</label>
@@ -263,6 +315,77 @@
             <div class="input-group"><label for="itemPubDateAttr">itemPubDateAttr:</label><input type="text" name="itemPubDateAttr" id="itemPubDateAttr" placeholder="日期属性名 (如 datetime)"></div>
             <div class="input-group"><label for="itemContent">itemContent:</label><input type="text" name="itemContent" id="itemContent" placeholder="详情页全文选择器 (去 itemLink 页面抓取)"></div>
             <div class="input-group"><label for="encoding">encoding:</label><input type="text" name="encoding" id="encoding" placeholder="例如 gbk, gb2312"></div>
+        </section>
+
+        <section aria-labelledby="filter-heading">
+            <button type="button" class="collapsible-toggle" id="filter-toggle">
+                <span class="arrow">▶</span> 高级过滤 (query 参数)
+            </button>
+            <div class="collapsible-content" id="filter-content">
+                <div class="filter-grid">
+                    <div class="input-group">
+                        <label for="q-filter">filter (通用正则匹配)</label>
+                        <input id="q-filter" type="text" name="filter" placeholder="匹配标题/正文/作者/分类">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterout">filterout (通用正则排除)</label>
+                        <input id="q-filterout" type="text" name="filterout" placeholder="排除匹配条目">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterTitle">filter_title</label>
+                        <input id="q-filterTitle" type="text" name="filter_title" placeholder="按标题过滤">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterDesc">filter_description</label>
+                        <input id="q-filterDesc" type="text" name="filter_description" placeholder="按正文过滤">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterAuthor">filter_author</label>
+                        <input id="q-filterAuthor" type="text" name="filter_author" placeholder="按作者过滤">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterCat">filter_category</label>
+                        <input id="q-filterCat" type="text" name="filter_category" placeholder="按分类过滤">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filteroutTitle">filterout_title</label>
+                        <input id="q-filteroutTitle" type="text" name="filterout_title" placeholder="按标题排除">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filteroutDesc">filterout_description</label>
+                        <input id="q-filteroutDesc" type="text" name="filterout_description" placeholder="按正文排除">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filteroutAuthor">filterout_author</label>
+                        <input id="q-filteroutAuthor" type="text" name="filterout_author" placeholder="按作者排除">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filteroutCat">filterout_category</label>
+                        <input id="q-filteroutCat" type="text" name="filterout_category" placeholder="按分类排除">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-filterTime">filter_time (秒)</label>
+                        <input id="q-filterTime" type="number" name="filter_time" placeholder="86400 = 24 小时">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-sorted">sorted (排序)</label>
+                        <select id="q-sorted" name="sorted">
+                            <option value="">默认 (排序)</option>
+                            <option value="false">false (保持原始顺序)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label">
+                            <input id="q-filterCase" type="checkbox" name="filter_case_sensitive" value="false">
+                            filter_case_sensitive (忽略大小写)
+                        </label>
+                    </div>
+                </div>
+                <p class="filter-doc-link">
+                    📖 所有路由通用。正则语法、大小写敏感性等详见
+                    <a href="https://docs.rsshub.app/zh/guide/parameters" target="_blank" rel="noopener noreferrer">RSSHub 参数文档</a>
+                </p>
+            </div>
         </section>
     </form>
 
@@ -306,6 +429,13 @@
         'itemTitleAttr', 'itemLinkAttr', 'itemDescAttr', 'itemPubDateAttr', 'encoding'
     ];
 
+    const queryParamFields = [
+        'key', 'limit', 'mode', 'sorted',
+        'filter', 'filter_title', 'filter_description', 'filter_author', 'filter_category',
+        'filterout', 'filterout_title', 'filterout_description', 'filterout_author', 'filterout_category',
+        'filter_time', 'filter_case_sensitive'
+    ];
+
     function updateOutput() {
         const formData = new FormData(DOMElements.form);
         const data = Object.fromEntries(formData.entries());
@@ -326,9 +456,11 @@
         let finalUrl = `${host}/rsshub/transform/html/${encodedTargetUrl}/${encodedRouteParams}`;
 
         const queryParams = new URLSearchParams();
-        if (data.key) queryParams.set('key', data.key);
-        if (data.limit) queryParams.set('limit', data.limit);
-        if (data.mode === 'fulltext') queryParams.set('mode', 'fulltext');
+        queryParamFields.forEach(field => {
+            if (data[field]) {
+                queryParams.set(field, data[field]);
+            }
+        });
 
         const queryString = queryParams.toString();
         if (queryString) {
@@ -368,12 +500,13 @@
 
             for (const [key, value] of allParams.entries()) {
                 const field = DOMElements.form.elements.namedItem(key);
-                if (field) {
-                    if (field.type === 'checkbox') {
-                        field.checked = field.value === value;
-                    } else {
-                        field.value = value;
-                    }
+                if (!field) continue;
+                if (key === 'mode' && field.type === 'checkbox') {
+                    field.checked = (value === 'fulltext');
+                } else if (field.type === 'checkbox') {
+                    field.checked = field.value === value;
+                } else {
+                    field.value = value;
                 }
             }
         } catch (error) {
@@ -404,6 +537,25 @@
         DOMElements.form.elements.namedItem('itemPubDateAttr').value = 'datetime';
         updateOutput();
     }
+
+    // persist host in localStorage
+    const hostInput = document.getElementById('host-input');
+    const savedHost = localStorage.getItem('rsshub-host');
+    if (savedHost) hostInput.value = savedHost;
+    hostInput.addEventListener('input', () => localStorage.setItem('rsshub-host', hostInput.value));
+
+    // URL validation hint
+    const urlInput = document.getElementById('url-input');
+    const urlHint = document.getElementById('url-hint');
+    urlInput.addEventListener('input', () => {
+        urlHint.style.display = /[^\x00-\x7F]/.test(urlInput.value) ? 'block' : 'none';
+    });
+
+    // collapsible toggle
+    document.getElementById('filter-toggle').addEventListener('click', () => {
+        document.getElementById('filter-toggle').classList.toggle('open');
+        document.getElementById('filter-content').classList.toggle('open');
+    });
 
     document.addEventListener('click', (event) => {
         if (event.target.classList.contains('copy-btn')) {
