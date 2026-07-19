@@ -250,9 +250,10 @@
                     <li><code>item</code>: <strong>【最重要】</strong> 重复出现、包裹着<strong>单篇文章</strong>所有信息的父级容器。</li>
                     <li><code>itemTitle</code>: 文章标题元素。</li>
                     <li><code>itemTitleAttr</code>: 如果标题在 HTML 属性（如 <code>title</code>、<code>alt</code>）中，设此参数为属性名。</li>
-                    <li><code>itemLink</code>: 文章链接的 <code>&lt;a&gt;</code> 标签。RSSHub 会自动补全相对链接。</li>
+                    <li><code>itemLink</code>: 文章链接的 <code>&lt;a&gt;</code> 标签。RSSHub 会自动补全相对链接。<br>
+                    <strong>⚠️ 边界情况（容器即链接）：</strong> 如果包裹单篇文章的最外层容器本身就是 <code>&lt;a&gt;</code> 标签（如 <code>&lt;a class="list-item"&gt;...&lt;/a&gt;</code>），请将 <code>item</code> 设为此 <code>&lt;a&gt;</code> 标签，并<strong>直接省略 <code>itemLink</code></strong>。RSSHub 默认取 item 自身的 <code>href</code>，再指定 itemLink 会导致解析错误或 <code>this route is empty</code>。</li>
                     <li><code>itemDesc</code>: 文章摘要。找不到明确的摘要可留空。</li>
-                    <li><code>itemPubDate</code>: 发布日期元素。</li>
+                    <li><code>itemPubDate</code>: 发布日期元素。如果时间是普通 <code>&lt;span&gt;</code> 或 <code>&lt;div&gt;</code> 中的纯文本（如 <code>07-10</code>），正常输出选择器即可，不用过度加工。</li>
                 </ul>
 
                 <h3>第二部分：itemContent（作用在详情页，不是列表页！）</h3>
@@ -286,6 +287,14 @@
                     <li>每行一个参数，格式为 <code>参数名: 值 (可选注释)</code>。注释部分会被自动忽略。</li>
                     <li>不存在的参数明确指出，如 <code>itemDesc: (未找到明确的摘要元素)</code>。</li>
                     <li><strong>没给详情页就不要输出 itemContent。</strong></li>
+                </ul>
+
+                <h3>第七部分：错误排查与修正</h3>
+                <p>如果我向你反馈了 RSSHub 的错误日志，请按以下流程处理：</p>
+                <ul>
+                    <li>如果报 <strong><code>this route is empty</code></strong>：通常意味着 <code>item</code> 选择器在 cheerio 解析时未能命中任何元素。请停止重复之前的输出，分析可能原因（JS 动态渲染、嵌套层级过深、或上文"容器即链接"的边界情况），提供 <strong>2~3 组不同层级或更简化的备选方案</strong>并说明修改思路。</li>
+                    <li>如果报 <strong><code>400</code> / <code>fetch failed</code></strong>：可能是目标 URL 需要特殊 header 或参数格式不对。检查是否需要 <code>encoding</code> 参数或请求方式调整。</li>
+                    <li>如果我反馈"链接丢失"或"链接不对"：检查 <code>item</code> 和 <code>itemLink</code> 是否重叠冲突（见第一部分边界情况），或尝试只设 <code>item</code> 省略 <code>itemLink</code>。</li>
                 </ul>
 
                 <h3>可输出的参数一览（按表单字段顺序）</h3>
@@ -373,8 +382,9 @@
 *   \`itemTitle\`: 文章标题元素。
 *   \`itemTitleAttr\`: 如果标题在 HTML 属性（如 \`title\`、\`alt\`）中，设此参数。
 *   \`itemLink\`: 文章链接的 \`<a>\` 标签。RSSHub 会自动补全相对链接。
+    **⚠️ 边界情况（容器即链接）：** 如果包裹单篇文章的最外层容器本身就是 \`<a>\` 标签（如 \`<a class="list-item">...</a>\`），请将 \`item\` 设为此 \`<a>\` 标签，并**直接省略 \`itemLink\`**。RSSHub 默认取 item 自身的 \`href\`，再指定 itemLink 会导致解析错误或 \`this route is empty\`。
 *   \`itemDesc\`: 文章摘要。找不到可留空。
-*   \`itemPubDate\`: 发布日期元素。
+*   \`itemPubDate\`: 发布日期元素。如果是普通 \`<span>\`/\`<div>\` 中的纯文本（如 \`07-10\`），正常输出选择器即可，不用过度加工。
 
 ### **第二部分：itemContent（作用在详情页，不是列表页！）**
 
@@ -439,6 +449,14 @@ filter_case_sensitive: (忽略大小写: false)
 \`\`\`
 
 > 💡 输出可直接粘贴到生成器的「粘贴 AI 提取结果自动填充」中。
+
+### **第七部分：错误排查与修正**
+
+如果我向你反馈了 RSSHub 的错误日志，请按以下流程处理：
+
+- 如果报 **\`this route is empty\`**：通常意味着 \`item\` 选择器在 cheerio 解析时未能命中任何元素。请停止重复之前的输出，分析可能原因（JS 动态渲染、嵌套层级过深、或上文"容器即链接"的边界情况），提供 **2~3 组不同层级或更简化的备选方案**并说明修改思路。
+- 如果报 **\`400\` / \`fetch failed\`**：可能是目标 URL 需要特殊 header 或编码问题。检查是否需要 \`encoding\` 参数。
+- 如果反馈"链接丢失"或"链接不对"：检查 \`item\` 和 \`itemLink\` 是否重叠冲突（见第一部分边界情况），尝试只设 \`item\` 省略 \`itemLink\`。
 
 ---
 **输出示例（含全文）：**
