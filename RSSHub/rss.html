@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSSHub 生成器 (增强版)</title>
+    <!-- 基于 RSSHub master 分支 9d486c3bda (2026-07-20) -->
     <style>
-        /* CSS 优化点：使用 CSS 变量方便主题管理 */
         :root {
             --primary-color: #4CAF50;
             --primary-hover-color: #45a049;
@@ -19,7 +19,6 @@
             --secondary-btn-hover-bg: #5a6268;
         }
 
-        /* CSS 优化点：全局设置 box-sizing，简化布局计算 */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -39,18 +38,16 @@
             max-width: 650px;
             display: flex;
             flex-direction: column;
-            gap: 15px; /* 代替 margin-bottom，实现元素间的统一间距 */
+            gap: 15px;
         }
-        
-        /* HTML 优化点：将 .container 改为语义化的 section */
+
         section {
             padding: 15px 20px;
             border: 1px solid var(--light-border-color);
             border-radius: 8px;
             background-color: var(--container-bg);
         }
-        
-        /* 隐藏标题，但保留给屏幕阅读器，提升可访问性 */
+
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -75,7 +72,6 @@
             margin-bottom: 5px;
         }
 
-        /* HTML/Accessibility 优化点：让 label 包裹 input，点击文字也能触发 */
         .checkbox-label {
             display: flex;
             align-items: center;
@@ -84,10 +80,9 @@
         }
         .checkbox-label input {
             margin-right: 8px;
-            width: auto; /* 让 checkbox 恢复默认宽度 */
+            width: auto;
         }
 
-        /* CSS 优化点：使用了 box-sizing，可以直接设置 width: 100% */
         input[type="text"], input[type="url"], input[type="number"] {
             width: 100%;
             padding: 8px;
@@ -107,11 +102,11 @@
             font-size: 14px;
             transition: background-color 0.2s;
         }
-        
+
         button:hover {
             background-color: var(--primary-hover-color);
         }
-        
+
         .result-item {
             position: relative;
             margin-bottom: 10px;
@@ -142,7 +137,7 @@
         }
         .copy-btn:hover { background-color: var(--secondary-btn-hover-bg); opacity: 1; }
         .copy-btn:active { transform: scale(0.95); }
-        
+
         .links {
             text-align: center;
             padding-bottom: 10px;
@@ -152,10 +147,10 @@
             color: var(--primary-color);
             text-decoration: none;
         }
-        
+
         .action-group { display: flex; gap: 10px; align-items: center; }
         .action-group input[type="url"] { flex-grow: 1; }
-        
+
         #parse-error {
             color: var(--error-color);
             font-size: 14px;
@@ -170,22 +165,47 @@
             text-decoration: none;
             font-weight: bold;
         }
+
+        .info-tip {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .warning-box {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #a8071a;
+        }
+
+        .version-info-line {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
 
 <main>
-    <!-- HTML 优化点：使用 main 作为主内容容器 -->
     <section>
         <div class="links">
             <a href="https://aaz.ee/3cx3xy" target="_blank" rel="noopener noreferrer">原教程</a>
             <a href="https://docs.rsshub.app/" target="_blank" rel="noopener noreferrer">RSSHub文档</a>
-             <a href="https://aaz.ee/24tdjr" target="_blank" rel="noopener noreferrer">参数说明</a>
-             <a href="https://aaz.ee/tn2nkc" target="_blank" rel="noopener noreferrer">AI提示词</a>
+            <a href="transform-params-doc.html" target="_blank" rel="noopener noreferrer">参数说明</a>
+            <a href="transform-ai-prompt.html" target="_blank" rel="noopener noreferrer">AI提示词</a>
         </div>
+        <p class="version-info-line">RSSHub master: 9d486c3bda · 2026-07-20</p>
     </section>
 
-    <!-- HTML 优化点：所有输入项统一放入一个 form 中 -->
+    <section class="warning-box">
+        ⚠️ 自建服务需设置环境变量 <code>ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=true</code> 才能使用。<br>
+        ⚠️ transform/html 硬编码上限 <strong>20 条</strong>，limit 参数在此范围内生效。
+    </section>
+
     <form id="rss-generator-form">
         <section aria-labelledby="parser-heading">
             <h2 id="parser-heading" class="visually-hidden">从链接解析</h2>
@@ -194,11 +214,10 @@
                 <div class="action-group">
                     <input id="rss-input" type="url" placeholder="粘贴完整的 RSSHub 链接">
                     <button type="button" id="parse-btn">解析</button>
-                    <!-- UX 优化点：添加清空按钮 -->
                     <button type="button" id="clear-btn" style="background-color: var(--secondary-btn-bg);">清空</button>
+                    <button type="button" id="example-btn" style="background-color: #1890ff;">示例</button>
                 </div>
-                <!-- UX 优化点：非阻塞式错误提示 -->
-                <p id="parse-error"></p> 
+                <p id="parse-error"></p>
             </div>
         </section>
 
@@ -218,7 +237,8 @@
             </div>
             <div class="input-group">
                 <label for="limit-input">获取条目数量:</label>
-                <input id="limit-input" type="number" name="limit" placeholder="默认不限制">
+                <input id="limit-input" type="number" name="limit" placeholder="默认不限制 (最大 20 条)">
+                <p class="info-tip">最大 20 条（transform/html 硬编码上限）</p>
             </div>
             <div class="input-group">
                 <label class="checkbox-label">
@@ -230,17 +250,17 @@
 
         <section aria-labelledby="params-heading">
             <h2 id="params-heading">高级路由参数 (routeParams)</h2>
-            <div class="input-group"><label for="title">title:</label><input type="text" name="title" id="title"></div>
-            <div class="input-group"><label for="item">item:</label><input type="text" name="item" id="item"></div>
-            <div class="input-group"><label for="itemTitle">itemTitle:</label><input type="text" name="itemTitle" id="itemTitle"></div>
-            <div class="input-group"><label for="itemTitleAttr">itemTitleAttr:</label><input type="text" name="itemTitleAttr" id="itemTitleAttr"></div>
-            <div class="input-group"><label for="itemLink">itemLink:</label><input type="text" name="itemLink" id="itemLink"></div>
-            <div class="input-group"><label for="itemLinkAttr">itemLinkAttr:</label><input type="text" name="itemLinkAttr" id="itemLinkAttr"></div>
-            <div class="input-group"><label for="itemDesc">itemDesc:</label><input type="text" name="itemDesc" id="itemDesc"></div>
-            <div class="input-group"><label for="itemDescAttr">itemDescAttr:</label><input type="text" name="itemDescAttr" id="itemDescAttr"></div>
-            <div class="input-group"><label for="itemPubDate">itemPubDate:</label><input type="text" name="itemPubDate" id="itemPubDate"></div>
-            <div class="input-group"><label for="itemPubDateAttr">itemPubDateAttr:</label><input type="text" name="itemPubDateAttr" id="itemPubDateAttr"></div>
-            <div class="input-group"><label for="itemContent">itemContent:</label><input type="text" name="itemContent" id="itemContent"></div>
+            <div class="input-group"><label for="title">title:</label><input type="text" name="title" id="title" placeholder="Feed 标题，默认取 <title>"></div>
+            <div class="input-group"><label for="item">item:</label><input type="text" name="item" id="item" placeholder="文章容器 CSS 选择器 (默认: html)"></div>
+            <div class="input-group"><label for="itemTitle">itemTitle:</label><input type="text" name="itemTitle" id="itemTitle" placeholder="标题选择器"></div>
+            <div class="input-group"><label for="itemTitleAttr">itemTitleAttr:</label><input type="text" name="itemTitleAttr" id="itemTitleAttr" placeholder="标题属性名 (如 title, alt)"></div>
+            <div class="input-group"><label for="itemLink">itemLink:</label><input type="text" name="itemLink" id="itemLink" placeholder="链接选择器 (默认: item 元素)"></div>
+            <div class="input-group"><label for="itemLinkAttr">itemLinkAttr:</label><input type="text" name="itemLinkAttr" id="itemLinkAttr" placeholder="链接属性名 (默认: href)"></div>
+            <div class="input-group"><label for="itemDesc">itemDesc:</label><input type="text" name="itemDesc" id="itemDesc" placeholder="摘要选择器 (默认: item 元素)"></div>
+            <div class="input-group"><label for="itemDescAttr">itemDescAttr:</label><input type="text" name="itemDescAttr" id="itemDescAttr" placeholder="摘要属性名 (默认: 元素 html)"></div>
+            <div class="input-group"><label for="itemPubDate">itemPubDate:</label><input type="text" name="itemPubDate" id="itemPubDate" placeholder="日期选择器 (默认: item 元素)"></div>
+            <div class="input-group"><label for="itemPubDateAttr">itemPubDateAttr:</label><input type="text" name="itemPubDateAttr" id="itemPubDateAttr" placeholder="日期属性名 (如 datetime)"></div>
+            <div class="input-group"><label for="itemContent">itemContent:</label><input type="text" name="itemContent" id="itemContent" placeholder="详情页全文选择器 (去 itemLink 页面抓取)"></div>
             <div class="input-group"><label for="encoding">encoding:</label><input type="text" name="encoding" id="encoding" placeholder="例如 gbk, gb2312"></div>
         </section>
     </form>
@@ -267,35 +287,31 @@
 </main>
 
 <script>
-    // 缓存所有需要操作的 DOM 元素
     const DOMElements = {
         form: document.getElementById('rss-generator-form'),
         rssInput: document.getElementById('rss-input'),
         parseBtn: document.getElementById('parse-btn'),
         clearBtn: document.getElementById('clear-btn'),
+        exampleBtn: document.getElementById('example-btn'),
         parseError: document.getElementById('parse-error'),
         resultFinalUrl: document.getElementById('result-final-url'),
         resultEncodedUrl: document.getElementById('result-encoded-url'),
         resultRouteParams: document.getElementById('result-route-params'),
         subscribeLink: document.getElementById('subscribe-link'),
     };
-    
-    // 定义所有属于 routeParams 的字段
+
     const routeParamFields = [
         'title', 'item', 'itemTitle', 'itemLink', 'itemDesc', 'itemPubDate', 'itemContent',
         'itemTitleAttr', 'itemLinkAttr', 'itemDescAttr', 'itemPubDateAttr', 'encoding'
     ];
-    
-    /**
-     * 核心函数：根据表单数据更新输出结果
-     */
+
     function updateOutput() {
         const formData = new FormData(DOMElements.form);
         const data = Object.fromEntries(formData.entries());
 
         const host = (data.host || 'https://rsshub.app').replace(/\/$/, '');
         const targetUrl = data.url || '';
-        
+
         const routeParams = new URLSearchParams();
         routeParamFields.forEach(field => {
             if (data[field]) {
@@ -305,10 +321,9 @@
 
         const encodedTargetUrl = targetUrl ? encodeURIComponent(targetUrl) : '';
         const encodedRouteParams = routeParams.toString() ? encodeURIComponent(routeParams.toString()) : '';
-        
+
         let finalUrl = `${host}/rsshub/transform/html/${encodedTargetUrl}/${encodedRouteParams}`;
-        
-        // 使用 URLSearchParams 统一处理查询参数，更健壮
+
         const queryParams = new URLSearchParams();
         if (data.key) queryParams.set('key', data.key);
         if (data.limit) queryParams.set('limit', data.limit);
@@ -318,18 +333,15 @@
         if (queryString) {
             finalUrl += `?${queryString}`;
         }
-        
+
         DOMElements.resultFinalUrl.textContent = finalUrl;
         DOMElements.resultEncodedUrl.textContent = encodedTargetUrl;
         DOMElements.resultRouteParams.textContent = encodedRouteParams;
         DOMElements.subscribeLink.href = finalUrl;
     }
 
-    /**
-     * 使用 URL API 解析输入链接，填充表单
-     */
     function parseAndFill() {
-        DOMElements.parseError.textContent = ''; // 清空之前的错误
+        DOMElements.parseError.textContent = '';
         const link = DOMElements.rssInput.value.trim();
         if (!link) return;
 
@@ -340,15 +352,14 @@
             if (pathParts[0] !== 'rsshub' || pathParts[1] !== 'transform' || pathParts[2] !== 'html' || !pathParts[3]) {
                 throw new Error('不是一个有效的 RSSHub transform/html 链接。');
             }
-            
+
             clearForm();
 
             DOMElements.form.elements.namedItem('host').value = `${url.protocol}//${url.host}`;
             DOMElements.form.elements.namedItem('url').value = decodeURIComponent(pathParts[3]);
-            
+
             const routeParams = new URLSearchParams(decodeURIComponent(pathParts[4] || ''));
-            
-            // 合并路径中的参数和查询字符串中的参数 (?key=...)
+
             const allParams = new URLSearchParams(url.search);
             routeParams.forEach((value, key) => {
                 allParams.set(key, value);
@@ -368,28 +379,36 @@
             DOMElements.parseError.textContent = `解析失败: ${error.message}`;
             console.error(error);
         } finally {
-            updateOutput(); // 无论成功失败都更新一次输出
+            updateOutput();
         }
     }
-    
-    /**
-     * 清空表单和结果
-     */
+
     function clearForm() {
         DOMElements.form.reset();
         DOMElements.rssInput.value = '';
         DOMElements.parseError.textContent = '';
-        // 人工设置默认值，因为reset()会清空所有
         DOMElements.form.elements.namedItem('host').value = "https://rsshub.app";
         updateOutput();
     }
 
-    // 事件委托：处理所有复制按钮的点击事件
+    /** 加载示例：少數派 Matrix */
+    function loadExample() {
+        clearForm();
+        DOMElements.form.elements.namedItem('url').value = 'https://sspai.com/matrix';
+        DOMElements.form.elements.namedItem('item').value = 'article.item';
+        DOMElements.form.elements.namedItem('itemTitle').value = 'a.item-title';
+        DOMElements.form.elements.namedItem('itemLink').value = 'a.item-title';
+        DOMElements.form.elements.namedItem('itemDesc').value = 'div.content p';
+        DOMElements.form.elements.namedItem('itemPubDate').value = 'time';
+        DOMElements.form.elements.namedItem('itemPubDateAttr').value = 'datetime';
+        updateOutput();
+    }
+
     document.addEventListener('click', (event) => {
         if (event.target.classList.contains('copy-btn')) {
             const targetId = event.target.dataset.target;
             const content = document.getElementById(targetId).textContent;
-            if (!content) return; // 不复制空内容
+            if (!content) return;
 
             navigator.clipboard.writeText(content).then(() => {
                 const originalText = event.target.textContent;
@@ -404,16 +423,12 @@
         }
     });
 
-    // 实时更新
     DOMElements.form.addEventListener('input', updateOutput);
-    
-    // 绑定按钮事件
     DOMElements.parseBtn.addEventListener('click', parseAndFill);
     DOMElements.clearBtn.addEventListener('click', clearForm);
+    DOMElements.exampleBtn.addEventListener('click', loadExample);
 
-    // 初始加载时运行一次，生成空的初始状态
     updateOutput();
-
 </script>
 
 </body>
