@@ -228,8 +228,9 @@
                 <div class="description">
                     <p>启用全文抓取模式。勾选后，RSSHub 会尝试访问每个条目的链接，并抓取其页面的正文内容填充到 RSS 的描述中。</p>
                     <ul>
-                        <li>这会显著增加服务器的请求次数和处理时间。</li>
+                        <li>使用 <code>@jocmp/mercury-parser</code> 算法自动识别正文（类 Readability），可能会漏段落。</li>
                         <li>当目标网站有反爬虫措施时，可能会失败。</li>
+                        <li><strong>对 <code>transform/html</code> 路由无效</strong>。请用 <code>itemContent</code> 代替。</li>
                     </ul>
                 </div>
             </div>
@@ -237,7 +238,7 @@
 
 
         <section class="category-section">
-            <h2>高级路由参数 (routeParams)</h2>
+            <h2>高级路由参数 (routeParams) <small style="color:#888;">— 作用在<strong>列表页</strong></small></h2>
 
             <div class="param-card">
                 <h3><code>title</code></h3>
@@ -260,16 +261,15 @@
             </div>
 
             <div class="param-card">
-                <h3><code>itemTitle</code>, <code>itemTitleAttr</code>, <code>itemLink</code>, <code>itemDesc</code>, <code>itemPubDate</code>, <code>itemContent</code></h3>
+                <h3><code>itemTitle</code>, <code>itemTitleAttr</code>, <code>itemLink</code>, <code>itemDesc</code>, <code>itemPubDate</code></h3>
                 <div class="description">
-                    <p>这些参数用来从每个 <code>item</code> 容器内部提取具体信息。它们的选择器是 <strong>相对于 <code>item</code> 元素</strong> 的。</p>
+                    <p>这些参数用来从每个 <code>item</code> 容器内部提取具体信息。它们的选择器是 <strong>相对于 <code>item</code> 元素</strong> 的。全部作用在列表页。</p>
                     <ul>
-                        <li><code>itemTitle</code>: 文章标题。</li>
-                        <li><code>itemTitleAttr</code>: <strong>【新增】</strong> 标题在属性中时的属性名。例如当标题存放在 <code>title</code> 属性或 <code>alt</code> 属性中时，设此参数。默认为元素文本。</li>
-                        <li><code>itemLink</code>: 文章链接，通常指向一个 <code>&lt;a&gt;</code> 标签。</li>
-                        <li><code>itemDesc</code>: 文章摘要或描述。</li>
+                        <li><code>itemTitle</code>: 文章标题。默认为元素文本。</li>
+                        <li><code>itemTitleAttr</code>: 标题在属性中时的属性名（如 <code>title</code>、<code>alt</code>）。</li>
+                        <li><code>itemLink</code>: 文章链接，通常指向一个 <code>&lt;a&gt;</code> 标签。相对链接自动补全。</li>
+                        <li><code>itemDesc</code>: 文章摘要或描述。默认为元素的 innerHTML。</li>
                         <li><code>itemPubDate</code>: 文章发布日期。RSSHub 会智能解析多种日期格式。</li>
-                        <li><code>itemContent</code>: <strong>【更正】</strong> 访问每篇文章的 <code>itemLink</code> 页面，抓取指定 CSS 选择器的正文内容作为全文。RSSHub 会自动缓存抓取结果并使用 <code>sanitize-html</code> 清洗内容（默认保留 <code>&lt;img&gt;</code> 标签）。</li>
                     </ul>
                 </div>
                 <div class="example">
@@ -280,8 +280,20 @@
                         <li><code>itemLink</code>: <code>.post-wrapper > a</code></li>
                         <li><code>itemDesc</code>: <code>p.summary</code></li>
                         <li><code>itemPubDate</code>: <code>span.date</code></li>
-                        <li><code>itemContent</code>: <code>article.main-content</code> (详情页正文选择器)</li>
                     </ul>
+                </div>
+            </div>
+
+            <div class="param-card">
+                <h3><code>itemContent</code> <small style="color:#d9534f;">— 作用在<strong>详情页</strong>（唯一例外）</small></h3>
+                <div class="description">
+                    <p><strong>这是唯一作用在详情页的选择器。</strong> 其余所有参数（item、itemTitle、itemLink 等）都作用在列表页。</p>
+                    <p>填了 <code>itemContent</code> 后，RSSHub 会去每篇文章的 <code>itemLink</code> 指向的详情页，用你指定的 CSS 选择器精确抓取正文容器，替换 RSS 的 description。抓取过程带缓存。</p>
+                    <p><strong>如何确定选择器？</strong> 在浏览器中打开任意一篇文章的详情页 → F12 → 找到包裹正文的那个 <code>&lt;article&gt;</code> 或 <code>&lt;div&gt;</code> → 复制它的 class。</p>
+                </div>
+                <div class="example">
+                    <strong>示例：</strong><code>article.post-content</code> 或 <code>div.entry-body</code><br>
+                    <strong>注意：</strong> 该选择器来自<strong>详情页</strong>，不是列表页。
                 </div>
             </div>
         </section>
