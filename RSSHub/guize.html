@@ -157,6 +157,12 @@
     <header>
         <h1>RSSHub 生成器 - 参数说明文档</h1>
         <p>理解每个参数的用途，释放 RSSHub 的全部潜力。</p>
+        <nav style="margin:12px 0;">
+            <a href="./rss.html">🔧 生成器</a> &nbsp;|&nbsp;
+            <a href="./guize.html">📖 参数说明</a> &nbsp;|&nbsp;
+            <a href="./ai.html">🤖 AI提示词</a> &nbsp;|&nbsp;
+            <a href="https://docs.rsshub.app/" target="_blank" rel="noopener noreferrer">📚 RSSHub文档</a>
+        </nav>
         <p class="version-info">基于 RSSHub master: 9d486c3bda · 2026-07-20</p>
     </header>
 
@@ -336,12 +342,34 @@
         <section class="category-section">
             <h2>其他 Transform 路由</h2>
             <div class="description">
-                <p>除了 <code>transform/html</code>，RSSHub 还支持以下 transform 路由：</p>
+                <p>除了 <code>/rsshub/transform/html</code>，RSSHub 还支持以下 transform 路由：</p>
                 <ul>
-                    <li><strong><code>/transform/json/:url/:routeParams</code></strong> — 从 JSON API 响应生成 RSS。支持 <code>itemTitle</code>、<code>itemLink</code>、<code>itemLinkPrefix</code>、<code>itemDesc</code>、<code>itemPubDate</code> 等 JSON Path 参数。</li>
-                    <li><strong><code>/transform/sitemap/:url/:routeParams</code></strong> — 从网站 sitemap.xml 生成 RSS。</li>
+                    <li><strong><code>/rsshub/transform/json/:url/:routeParams</code></strong> — 从 JSON API 响应生成 RSS。支持 <code>itemTitle</code>、<code>itemLink</code>、<code>itemLinkPrefix</code>、<code>itemDesc</code>、<code>itemPubDate</code> 等 JSON Path 参数。</li>
+                    <li><strong><code>/rsshub/transform/sitemap/:url/:routeParams</code></strong> — 从网站 sitemap.xml 生成 RSS（<code>:routeParams</code> 可选）。</li>
                 </ul>
-                <p>详情参阅 <a href="https://docs.rsshub.app/routes/routes" target="_blank" rel="noopener noreferrer">RSSHub 官方文档</a>。</p>
+                <p>详情参阅 <a href="https://docs.rsshub.app/zh/routes/rsshub" target="_blank" rel="noopener noreferrer">RSSHub 官方文档 /rsshub 路由</a>。</p>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <h2>制作全文 RSS 的几种方式</h2>
+            <div class="description">
+                <p>RSSHub <strong>没有内置通用的 readability 全文提取路由</strong>（不存在 <code>/rsshub/fulltext</code> 之类）。以下是目前可用的全文获取方案：</p>
+                <ol>
+                    <li>
+                        <strong><code>/rsshub/transform/html</code> + <code>itemContent</code></strong> — 最通用的方案。<br>
+                        指定详情页正文的 CSS 选择器，RSSHub 会自动去每篇文章的 <code>itemLink</code> 页面抓取全文，并用 <code>sanitize-html</code> 清洗（保留 img 标签），带有缓存。需自建服务。
+                        <br><code>示例: /rsshub/transform/html/<em>目标URL</em>/item=...&itemLink=...&itemContent=article.content</code>
+                    </li>
+                    <li>
+                        <strong>各路由自带的 <code>?mode=fulltext</code></strong> — 部分内置路由支持。<br>
+                        如 bilibili、apnews、caixin 等路由，在订阅地址后加 <code>?mode=fulltext</code> 即可获取全文。这是路由作者自行实现的，非通用功能。
+                    </li>
+                    <li>
+                        <strong>第三方 Readability 方案</strong> — RSSHub 社区外方案。<br>
+                        可使用 <a href="https://github.com/DIYgod/RSSHub-Radar" target="_blank" rel="noopener noreferrer">RSSHub Radar</a> 配合 <a href="https://github.com/DIYgod/RSSHub" target="_blank" rel="noopener noreferrer">RSSHub</a> 之后，借助 <a href="https://github.com/mozilla/readability" target="_blank" rel="noopener noreferrer">Mozilla Readability</a> 等库在前端做全文提取。
+                    </li>
+                </ol>
             </div>
         </section>
     </main>
