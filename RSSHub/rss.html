@@ -193,10 +193,10 @@
 <main>
     <section>
         <div class="links">
-            <a href="https://aaz.ee/3cx3xy" target="_blank" rel="noopener noreferrer">原教程</a>
-            <a href="https://docs.rsshub.app/" target="_blank" rel="noopener noreferrer">RSSHub文档</a>
-            <a href="transform-params-doc.html" target="_blank" rel="noopener noreferrer">参数说明</a>
-            <a href="transform-ai-prompt.html" target="_blank" rel="noopener noreferrer">AI提示词</a>
+            <a href="./rss.html">🔧 生成器</a>
+            <a href="./guize.html">📖 参数说明</a>
+            <a href="./ai.html">🤖 AI提示词</a>
+            <a href="https://docs.rsshub.app/" target="_blank" rel="noopener noreferrer">📚 RSSHub文档</a>
         </div>
         <p class="version-info-line">RSSHub master: 9d486c3bda · 2026-07-20</p>
     </section>
@@ -245,6 +245,7 @@
                     <input id="fulltext-input" type="checkbox" name="mode" value="fulltext">
                     是否获取全文 (mode=fulltext)
                 </label>
+                <p class="info-tip">注意：transform/html 路由不处理此参数。请使用下方的 <code>itemContent</code> 参数指定详情页正文选择器来实现全文抓取。</p>
             </div>
         </section>
 
