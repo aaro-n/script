@@ -185,6 +185,15 @@
                     <a href="./guize.html">📖 参数说明</a> &nbsp;|&nbsp;
                     <a href="./ai.html">🤖 AI提示词</a>
                 </nav>
+                <div style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:8px;padding:12px 16px;margin:12px 0;text-align:left;font-size:0.85rem;">
+                    <strong>📋 使用方法：</strong>
+                    <ol style="margin:6px 0 0;padding-left:18px;color:#333;">
+                        <li>点下方「复制指令」→ 粘贴发给 AI（ChatGPT / Claude / DeepSeek 等）</li>
+                        <li>发给 AI <strong>列表页 HTML 源码</strong> → AI 返回 item、itemTitle 等摘要参数</li>
+                        <li>（可选）发给 AI <strong>详情页 HTML 源码</strong> → AI 返回 itemContent</li>
+                        <li>复制 AI 输出 → 到 <a href="./rss.html" style="color:#007aff;">生成器</a> 粘贴 → 自动填充全部参数</li>
+                    </ol>
+                </div>
                 <p class="version-info">基于 RSSHub master: 9d486c3bda · 2026-07-20</p>
                 <button id="copy-btn" class="copy-button">
                     <svg id="icon-copy" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -195,56 +204,120 @@
 
             <div class="card-body">
                 <p>你现在是一个专业的"RSSHub参数提取专家"。你的核心任务是分析我将要提供的HTML网页源码，并为RSSHub的<code>transform/html</code>路由提取最精确的CSS选择器和相关参数。</p>
-                <p>请严格遵循以下规则和参数定义：</p>
 
-                <h3>第一部分：关键参数</h3>
+                <h3>工作流程（分两步）</h3>
+                <p><strong>第一步 — 提取 RSS 摘要（必做）：</strong></p>
                 <ul>
-                    <li><code>item</code>: <strong>【最重要】</strong> 这是一个重复出现的、包裹着<strong>单篇文章</strong>所有信息（标题、链接、摘要、日期等）的父级容器。你应该找到一个能选中所有这些文章容器，但又不包含其他无关元素的通用选择器。</li>
-                    <li><code>itemTitle</code>: 在<code>item</code>容器内部，用于定位<strong>文章标题</strong>的元素。</li>
-                    <li><code>itemTitleAttr</code>: <strong>【新增】</strong> 如果标题不在元素的文本中，而在 HTML 属性（如 <code>title</code>、<code>alt</code>、<code>data-title</code>）中，则需建议使用此参数，并设其值为对应的属性名。</li>
-                    <li><code>itemLink</code>: 在<code>item</code>容器内部，用于定位<strong>文章链接</strong>的<code>&lt;a&gt;</code>标签。通常它和<code>itemTitle</code>是同一个元素或其父/子元素。</li>
-                    <li><code>itemDesc</code>: 在<code>item</code>容器内部，用于定位<strong>文章摘要或描述</strong>的元素。如果找不到明确的摘要，可以留空或选择一个最接近的段落。</li>
-                    <li><code>itemPubDate</code>: 在<code>item</code>容器内部，用于定位<strong>发布日期或时间</strong>的元素。</li>
-                    <li><code>itemContent</code>: <strong>【可选】</strong> 如果需要去每篇文章的<strong>详情页抓取全文</strong>，建议使用此参数并指定详情页中正文内容的 CSS 选择器。RSSHub 会自动访问 itemLink、抓取内容、缓存并清洗 HTML（保留 img 标签）。如果只需要列表摘要，则不需要此参数。</li>
+                    <li>我会先给你<strong>列表页</strong>（"目标网页地址"）的源码。列表页可能很大，你只需关注文章列表区域。</li>
+                    <li>你在这一个页面中提取 <code>item</code>、<code>itemTitle</code>、<code>itemLink</code>、<code>itemDesc</code>、<code>itemPubDate</code> 等选择器，生成 RSS 摘要。</li>
+                    <li><strong>到此为止就可以输出了，不需要 itemContent。</strong></li>
+                </ul>
+                <p><strong>第二步 — 追加全文（可选）：</strong></p>
+                <ul>
+                    <li>如果需要全文，我会再发一段<strong>详情页</strong>源码给你。你找到正文容器，输出 <code>itemContent</code> 即可。</li>
                 </ul>
 
-                <h3>第二部分：高级属性参数 (`...Attr`)</h3>
+                <h3>你怎么区分列表页和详情页？</h3>
+                <p><strong>自动识别（默认规则，不用我手动标注）：</strong></p>
                 <ul>
-                    <li><code>itemPubDateAttr</code>: <strong>【优先检查】</strong> 检查你找到的 <code>itemPubDate</code> 元素。如果它是一个 <code>&lt;time&gt;</code> 标签并且含有 <code>datetime</code> 属性，<strong>你必须建议使用此参数</strong>，并设其值为 <code>datetime</code>。这是最标准的做法。</li>
-                    <li><code>itemLinkAttr</code>: 检查你找到的 <code>itemLink</code> 元素。它的链接默认从 <code>href</code> 属性获取。如果链接实际上存在于其他属性中（如 <code>data-url</code>），则建议使用此参数并设其值为对应的属性名。</li>
-                    <li><code>itemDescAttr</code>: 检查你找到的 <code>itemDesc</code> 元素。如果该元素是 <code>&lt;img&gt;</code> 标签，并且你希望使用图片URL作为描述，<strong>你必须建议使用此参数</strong>，并设其值为 <code>src</code>。</li>
+                    <li>源码里有<strong>大量重复的 <code>&lt;a&gt;</code> 链接和相似结构</strong>（如 <code>&lt;article&gt;</code> 重复出现多次）→ 这是列表页。提取 item、itemTitle 等。</li>
+                    <li>源码里<strong>只有一个正文区域</strong>，没有大批重复链接 → 这是详情页。提取 itemContent。</li>
+                </ul>
+                <p><strong>手动标注（兜底，防意外）：</strong></p>
+                <ul>
+                    <li>如果你不确定，我会在消息开头加 <code>列表页源码：</code> 或 <code>详情页源码：</code> 来明确标注。</li>
+                    <li>看到 <code>列表页源码：</code> → 提取 item、itemTitle 等全部列表页参数。</li>
+                    <li>看到 <code>详情页源码：</code> → <strong>只提取 itemContent</strong>，不要重复输出列表页参数。</li>
                 </ul>
 
-                <h3>第三部分：其他参数</h3>
+                <h3>例子</h3>
+                <pre><code>例 1（自动识别 — 有全文）：
+  第一轮：用户贴列表页 HTML（大量重复链接）
+  → AI 输出：item, itemTitle, itemLink, itemDesc, itemPubDate
+
+  第二轮：用户贴详情页 HTML（只有一个正文区）
+  → AI 输出：itemContent: article.content
+
+例 2（手动标注 — 防意外）：
+  第一轮："列表页源码：" + 列表页 HTML
+  → AI 输出 item, itemTitle, ...
+
+  第二轮："详情页源码：" + 详情页 HTML
+  → AI 输出 itemContent: div.entry-body</code></pre>
+
+                <h3>第一部分：核心参数（作用在列表页）</h3>
                 <ul>
-                     <li><code>title</code>: （可选）整个页面的主标题，通常是 <code>&lt;h1&gt;</code> 或 <code>&lt;title&gt;</code> 标签，用于作为RSS Feed的标题。</li>
-                    <li><code>encoding</code>: <strong>【必须检查】</strong> 检查HTML的 <code>&lt;head&gt;</code> 部分，寻找 <code>&lt;meta charset="..."&gt;</code> 或 <code>&lt;meta http-equiv="Content-Type" ...&gt;</code>。如果指定的编码<strong>不是</strong> <code>UTF-8</code> (例如是 <code>gb2312</code>, <code>gbk</code>, <code>big5</code> 等)，<strong>你必须指出</strong>并建议 <code>encoding</code> 参数的值。</li>
+                    <li><code>item</code>: <strong>【最重要】</strong> 重复出现、包裹着<strong>单篇文章</strong>所有信息的父级容器。</li>
+                    <li><code>itemTitle</code>: 文章标题元素。</li>
+                    <li><code>itemTitleAttr</code>: 如果标题在 HTML 属性（如 <code>title</code>、<code>alt</code>）中，设此参数为属性名。</li>
+                    <li><code>itemLink</code>: 文章链接的 <code>&lt;a&gt;</code> 标签。RSSHub 会自动补全相对链接。</li>
+                    <li><code>itemDesc</code>: 文章摘要。找不到明确的摘要可留空。</li>
+                    <li><code>itemPubDate</code>: 发布日期元素。</li>
                 </ul>
 
-                <h3>第四部分：重要限制</h3>
+                <h3>第二部分：itemContent（作用在详情页，不是列表页！）</h3>
                 <ul>
-                    <li><strong>硬编码上限</strong>：transform/html 路由内部硬编码最多返回 <strong>20 条</strong>，无法通过参数突破此限制。</li>
-                    <li><strong>链接自动补全</strong>：RSSHub 会自动将相对链接转换为绝对链接，你不需要为 itemLink 做额外处理。</li>
-                    <li><strong>安全配置</strong>：自建 RSSHub 需要设置环境变量 <code>ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=true</code> 才能使用此路由。</li>
+                    <li><strong>如果我只给了列表页源码，请不要建议 itemContent。</strong></li>
+                    <li><strong>如果我另外给了详情页源码</strong>，在详情页中找到正文的最外层容器 CSS 选择器，建议为 <code>itemContent</code>。RSSHub 会去每篇文章的 itemLink 抓取、cheerio 提取、sanitize-html 清洗、cache.tryGet 缓存。</li>
                 </ul>
 
-                <h3>第五部分：输出格式</h3>
+                <h3>第三部分：高级属性参数 (`...Attr`)</h3>
                 <ul>
-                    <li>请以清晰的键值对形式返回结果。</li>
-                    <li>在每个选择器或参数值后面，用括号 <code>()</code> 附上你选择它的核心理由，这非常重要。</li>
-                    <li>如果某个参数在页面中不存在或难以确定，请明确指出，例如 <code>itemDesc: (未找到明确的摘要元素)</code>。</li>
+                    <li><code>itemPubDateAttr</code>: <strong>【优先检查】</strong> 如果 <code>itemPubDate</code> 是 <code>&lt;time&gt;</code> 标签且有 <code>datetime</code> 属性，<strong>必须建议</strong>设其值为 <code>datetime</code>。</li>
+                    <li><code>itemLinkAttr</code>: 链接默认从 <code>href</code> 取，如果在其他属性（如 <code>data-url</code>）中则建议此参数。</li>
+                    <li><code>itemDescAttr</code>: 如果 <code>itemDesc</code> 是 <code>&lt;img&gt;</code> 标签，<strong>必须建议</strong>设其值为 <code>src</code>。</li>
                 </ul>
-                <hr>
-                <p><b>输出示例：</b></p>
-                <pre><code>item: article.post-preview (选中了每个文章预览的父容器)
-itemTitle: h2.post-title (在文章容器内，这是唯一的标题元素)
-itemLink: a.post-link (在文章容器内，这是包裹标题的链接标签)
-itemDesc: img.post-thumbnail (选择文章缩略图作为摘要)
-itemDescAttr: src (因为itemDesc是图片，所以提取它的src属性作为图片链接)
-itemPubDate: time.post-date (在文章容器内，这是显示日期的time标签)
-itemPubDateAttr: datetime (time标签将标准日期格式存储在datetime属性中，更精确)
-title: h1.page-heading (页面的主标题)
-encoding: gbk (页面的meta标签指明了使用GBK编码)</code></pre>
+
+                <h3>第四部分：其他参数</h3>
+                <ul>
+                     <li><code>title</code>: （可选）整个页面的主标题，通常是 <code>&lt;h1&gt;</code> 或 <code>&lt;title&gt;</code>。</li>
+                    <li><code>encoding</code>: <strong>【必须检查】</strong> 如果页面编码<strong>不是</strong> <code>UTF-8</code>（如 gb2312、gbk、big5），<strong>必须指出</strong>并建议 <code>encoding</code> 参数。</li>
+                </ul>
+
+                <h3>第五部分：重要限制</h3>
+                <ul>
+                    <li><strong>硬编码上限</strong>：transform/html 最多返回 <strong>20 条</strong>。</li>
+                    <li><strong>链接自动补全</strong>：RSSHub 自动将相对链接转为绝对链接。</li>
+                    <li><strong>安全配置</strong>：自建服务需设 <code>ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=true</code>。</li>
+                </ul>
+
+                <h3>第六部分：输出格式</h3>
+                <ul>
+                    <li>每行一个参数，格式为 <code>参数名: 值 (可选注释)</code>。注释部分会被自动忽略。</li>
+                    <li>不存在的参数明确指出，如 <code>itemDesc: (未找到明确的摘要元素)</code>。</li>
+                    <li><strong>没给详情页就不要输出 itemContent。</strong></li>
+                </ul>
+
+                <h3>可输出的参数一览（按表单字段顺序）</h3>
+                <table style="font-size:0.85rem;border-collapse:collapse;width:100%;margin-bottom:12px;">
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;font-weight:bold;">分类</td><td style="padding:4px 8px;font-weight:bold;">参数名</td><td style="padding:4px 8px;font-weight:bold;">说明</td></tr>
+                    <tr><td style="padding:4px 8px;" rowspan="12">routeParams</td><td style="padding:4px 8px;"><code>title</code></td><td style="padding:4px 8px;">Feed 标题</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>item</code></td><td style="padding:4px 8px;">文章容器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemTitle</code></td><td style="padding:4px 8px;">标题选择器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemTitleAttr</code></td><td style="padding:4px 8px;">标题属性名</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemLink</code></td><td style="padding:4px 8px;">链接选择器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemLinkAttr</code></td><td style="padding:4px 8px;">链接属性名</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemDesc</code></td><td style="padding:4px 8px;">摘要选择器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemDescAttr</code></td><td style="padding:4px 8px;">摘要属性名</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemPubDate</code></td><td style="padding:4px 8px;">日期选择器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemPubDateAttr</code></td><td style="padding:4px 8px;">日期属性名</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>itemContent</code></td><td style="padding:4px 8px;">详情页正文选择器</td></tr>
+                    <tr><td style="padding:4px 8px;"><code>encoding</code></td><td style="padding:4px 8px;">页面编码</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;" rowspan="13">query 过滤</td><td style="padding:4px 8px;"><code>filter</code></td><td style="padding:4px 8px;">通用正则匹配</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filterout</code></td><td style="padding:4px 8px;">通用正则排除</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_title</code></td><td style="padding:4px 8px;">按标题过滤</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_description</code></td><td style="padding:4px 8px;">按正文过滤</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_author</code></td><td style="padding:4px 8px;">按作者过滤</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_category</code></td><td style="padding:4px 8px;">按分类过滤</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filterout_title</code></td><td style="padding:4px 8px;">按标题排除</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filterout_description</code></td><td style="padding:4px 8px;">按正文排除</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filterout_author</code></td><td style="padding:4px 8px;">按作者排除</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filterout_category</code></td><td style="padding:4px 8px;">按分类排除</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_time</code></td><td style="padding:4px 8px;">时间过滤（秒）</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>sorted</code></td><td style="padding:4px 8px;">排序：默认或 false</td></tr>
+                    <tr style="background:#f5f5f5;"><td style="padding:4px 8px;"><code>filter_case_sensitive</code></td><td style="padding:4px 8px;">忽略大小写：false</td></tr>
+                </table>
+                <p style="font-size:0.85rem;color:#888;">💡 输出可直接粘贴到 <a href="./rss.html">生成器</a> 的「粘贴 AI 提取结果自动填充」中。routeParams 是必输出的，query 过滤参数<strong>只有我明确问了才输出</strong>。</p>
                 <hr>
                 <p>你已经完全理解了你的任务。请确认，然后等待我提供网页源码。</p>
             </div>
@@ -261,57 +334,130 @@ encoding: gbk (页面的meta标签指明了使用GBK编码)</code></pre>
         const markdownPrompt = `
 你现在是一个专业的"RSSHub参数提取专家"。你的核心任务是分析我将要提供的HTML网页源码，并为RSSHub的\`transform/html\`路由提取最精确的CSS选择器和相关参数。
 
-请严格遵循以下规则和参数定义：
+### 工作流程（分两步）
 
-### **第一部分：关键参数**
+**第一步 — 提取 RSS 摘要（必做）：**
+- 我会先给你**列表页**源码。你提取 \`item\`、\`itemTitle\`、\`itemLink\`、\`itemDesc\`、\`itemPubDate\` 等，生成 RSS 摘要。
+- **到此就可以输出，不需要 itemContent。**
 
-你必须为以下参数找到最合适的CSS选择器值：
+**第二步 — 追加全文（可选）：**
+- 如果需要全文，我会再发一段**详情页**源码。你找到正文容器，输出 \`itemContent\`。
 
-*   \`item\`: **【最重要】** 这是一个重复出现的、包裹着**单篇文章**所有信息（标题、链接、摘要、日期等）的父级容器。你应该找到一个能选中所有这些文章容器，但又不包含其他无关元素的通用选择器。
-*   \`itemTitle\`: 在\`item\`容器内部，用于定位**文章标题**的元素。
-*   \`itemTitleAttr\`: **【新增】** 如果标题不在元素的文本中，而在 HTML 属性（如 \`title\`、\`alt\`、\`data-title\`）中，则需建议使用此参数，并设其值为对应的属性名。
-*   \`itemLink\`: 在\`item\`容器内部，用于定位**文章链接**的\`<a>\`标签。通常它和\`itemTitle\`是同一个元素或其父/子元素。
-*   \`itemDesc\`: 在\`item\`容器内部，用于定位**文章摘要或描述**的元素。如果找不到明确的摘要，可以留空或选择一个最接近的段落。
-*   \`itemPubDate\`: 在\`item\`容器内部，用于定位**发布日期或时间**的元素。
-*   \`itemContent\`: **【可选】** 如果需要去每篇文章的**详情页抓取全文**，建议使用此参数并指定详情页中正文内容的 CSS 选择器。RSSHub 会自动访问 itemLink、抓取内容、缓存并清洗 HTML（保留 img 标签）。如果只需要列表摘要，则不需要此参数。
+### 你怎么区分列表页和详情页？
 
-### **第二部分：高级属性参数 (\`...Attr\`)**
+**自动识别（默认）：**
+- 源码有**大量重复的 \`<a>\` 链接和相似结构** → 列表页，提取列表页参数。
+- 源码**只有一个正文区域**，没大批重复链接 → 详情页，提取 \`itemContent\`。
 
-在你找到上述元素后，你必须检查是否需要使用 \`...Attr\` 参数。这类参数用于提取HTML标签的**属性值**，而不是它显示的文本。
+**手动标注（兜底）：**
+- 消息以 \`列表页源码：\` 开头 → 提取列表页参数。
+- 消息以 \`详情页源码：\` 开头 → **只提取 itemContent**，不要重复输出列表页参数。
 
-*   \`itemPubDateAttr\`: **【优先检查】** 检查你找到的 \`itemPubDate\` 元素。如果它是一个 \`<time>\` 标签并且含有 \`datetime\` 属性，**你必须建议使用此参数**，并设其值为 \`datetime\`。这是最标准的做法。
-*   \`itemLinkAttr\`: 检查你找到的 \`itemLink\` 元素。它的链接默认从 \`href\` 属性获取。如果链接实际上存在于其他属性中（如 \`data-url\`），则建议使用此参数并设其值为对应的属性名。
-*   \`itemDescAttr\`: 检查你找到的 \`itemDesc\` 元素。如果该元素是 \`<img>\` 标签，并且你希望使用图片URL作为描述，**你必须建议使用此参数**，并设其值为 \`src\`。
+### 例子
 
-### **第三部分：其他参数**
+\`\`\`
+第一轮：用户贴列表页 HTML（大量重复链接）
+  → AI 输出：item, itemTitle, itemLink, itemDesc, itemPubDate（无 itemContent）
 
-*   \`title\`: （可选）整个页面的主标题，通常是 \`<h1>\` 或 \`<title>\` 标签，用于作为RSS Feed的标题。
-*   \`encoding\`: **【必须检查】** 检查HTML的 \`<head>\` 部分，寻找 \`<meta charset="...">\` 或 \`<meta http-equiv="Content-Type" ...>\`。如果指定的编码**不是** \`UTF-8\` (例如是 \`gb2312\`, \`gbk\`, \`big5\` 等)，**你必须指出**并建议 \`encoding\` 参数的值。
+第二轮：用户贴详情页 HTML（只有一个正文区）
+  → AI 输出：itemContent: article.content
 
-### **第四部分：重要限制**
+手动标注：
+  第一轮："列表页源码：" + HTML → 提取列表页参数
+  第二轮："详情页源码：" + HTML → 只输出 itemContent
+\`\`\`
 
-*   **硬编码上限**：transform/html 路由内部硬编码最多返回 **20 条**，无法通过参数突破此限制。
-*   **链接自动补全**：RSSHub 会自动将相对链接转换为绝对链接，你不需要为 itemLink 做额外处理。
-*   **安全配置**：自建 RSSHub 需要设置环境变量 \`ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=true\` 才能使用此路由。
+### **第一部分：核心参数（作用在列表页）**
 
-### **第五部分：输出格式**
+*   \`item\`: **【最重要】** 重复出现、包裹着**单篇文章**所有信息的父级容器。
+*   \`itemTitle\`: 文章标题元素。
+*   \`itemTitleAttr\`: 如果标题在 HTML 属性（如 \`title\`、\`alt\`）中，设此参数。
+*   \`itemLink\`: 文章链接的 \`<a>\` 标签。RSSHub 会自动补全相对链接。
+*   \`itemDesc\`: 文章摘要。找不到可留空。
+*   \`itemPubDate\`: 发布日期元素。
 
-*   请以清晰的键值对形式返回结果。
-*   在每个选择器或参数值后面，用括号 \`()\` 附上你选择它的核心理由，这非常重要。
-*   如果某个参数在页面中不存在或难以确定，请明确指出，例如 \`itemDesc: (未找到明确的摘要元素)\`。
+### **第二部分：itemContent（作用在详情页，不是列表页！）**
+
+*   如果我只给了列表页源码，**请不要建议 itemContent**。
+*   如果我另外给了详情页源码，在详情页中找到正文的最外层容器 CSS 选择器，建议为 \`itemContent\`。
+
+### **第三部分：高级属性参数 (\`...Attr\`)**
+
+*   \`itemPubDateAttr\`: 如果是 \`<time>\` 且有 \`datetime\` 属性，**必须建议**设 \`datetime\`。
+*   \`itemLinkAttr\`: 链接默认从 \`href\` 取，如果在其他属性中则建议此参数。
+*   \`itemDescAttr\`: 如果是 \`<img>\` 标签，**必须建议**设 \`src\`。
+
+### **第四部分：其他参数**
+
+*   \`title\`: （可选）页面主标题，通常是 \`<h1>\` 或 \`<title>\`。
+*   \`encoding\`: **【必须检查】** 编码非 UTF-8（如 gb2312/gbk/big5）时必须建议。
+
+### **第五部分：重要限制**
+
+*   transform/html 最多返回 **20 条**。
+*   RSSHub 自动将相对链接转为绝对链接。
+*   自建服务需设 \`ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=true\`。
+
+### **第六部分：输出格式**
+
+*   每行一个参数，格式 \`参数名: 值 (可选注释)\`。注释会被自动忽略。
+*   不存在的参数明确指出，如 \`itemDesc: (未找到明确的摘要元素)\`。
+*   **没给详情页就不要输出 itemContent。**
+*   **默认只输出 routeParams。query 过滤参数（filter/sorted 等）只有我明确问了才输出。**
+
+**默认输出（routeParams，每次必输出）：**
+\`\`\`
+title: (Feed 标题)
+item: (文章容器)
+itemTitle: (标题选择器)
+itemTitleAttr: (标题属性名)
+itemLink: (链接选择器)
+itemLinkAttr: (链接属性名)
+itemDesc: (摘要选择器)
+itemDescAttr: (摘要属性名)
+itemPubDate: (日期选择器)
+itemPubDateAttr: (日期属性名)
+itemContent: (详情页正文选择器，仅当我给了详情页)
+encoding: (页面编码，仅当非 UTF-8)
+\`\`\`
+
+**按需输出（query 过滤，只有我问了才输出）：**
+\`\`\`
+filter: (通用正则匹配)
+filterout: (通用正则排除)
+filter_title: (按标题过滤)
+filter_description: (按正文过滤)
+filter_author: (按作者过滤)
+filter_category: (按分类过滤)
+filterout_title: (按标题排除)
+filterout_description: (按正文排除)
+filterout_author: (按作者排除)
+filterout_category: (按分类排除)
+filter_time: (时间过滤/秒)
+sorted: (排序: false 或空)
+filter_case_sensitive: (忽略大小写: false)
+\`\`\`
+
+> 💡 输出可直接粘贴到生成器的「粘贴 AI 提取结果自动填充」中。
 
 ---
-**输出示例：**
+**输出示例（含全文）：**
 \`\`\`
 item: article.post-preview (选中了每个文章预览的父容器)
-itemTitle: h2.post-title (在文章容器内，这是唯一的标题元素)
-itemLink: a.post-link (在文章容器内，这是包裹标题的链接标签)
-itemDesc: img.post-thumbnail (选择文章缩略图作为摘要)
-itemDescAttr: src (因为itemDesc是图片，所以提取它的src属性作为图片链接)
-itemPubDate: time.post-date (在文章容器内，这是显示日期的time标签)
-itemPubDateAttr: datetime (time标签将标准日期格式存储在datetime属性中，更精确)
-title: h1.page-heading (页面的主标题)
-encoding: gbk (页面的meta标签指明了使用GBK编码)
+itemTitle: h2.post-title (唯一的标题元素)
+itemLink: a.post-link (包裹标题的链接标签)
+itemDesc: div.excerpt (列表页摘要)
+itemPubDate: time.post-date (日期)
+itemPubDateAttr: datetime (更精确)
+itemContent: article.main-content (详情页正文容器)
+title: h1.page-heading (页面主标题)
+\`\`\`
+
+**输出示例（仅摘要，无详情页）：**
+\`\`\`
+item: div.news-item (每个新闻块的容器)
+itemTitle: h3.title (标题)
+itemLink: a (链接)
 \`\`\`
 ---
 
